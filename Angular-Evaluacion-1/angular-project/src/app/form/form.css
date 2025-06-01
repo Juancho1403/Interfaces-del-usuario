@@ -1,0 +1,230 @@
+:root {
+            --primary: #6a11cb;
+            --secondary: #2575fc;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--dark);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            border: none;
+            overflow: hidden;
+            background: rgba(255, 255, 255, 0.95);
+            transition: transform 0.3s;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .card-header {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+            padding: 20px;
+            border-radius: 15px 15px 0 0 !important;
+            font-size: 1.2rem;
+        }
+        
+        .form-section {
+            padding: 25px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .form-section h5 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            font-weight: 600;
+        }
+        
+        .form-section h5 i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+            background: rgba(106, 17, 203, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+        
+        .color-preview {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-left: 10px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+        }
+        
+        .form-label {
+            font-weight: 500;
+            color: #444;
+            margin-bottom: 8px;
+        }
+        
+        .btn-submit {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border: none;
+            padding: 12px 30px;
+            font-weight: 500;
+            margin-top: 15px;
+            transition: all 0.3s;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            letter-spacing: 0.5px;
+            box-shadow: 0 4px 15px rgba(106, 17, 203, 0.3);
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 7px 20px rgba(106, 17, 203, 0.4);
+        }
+        
+        .file-input-container {
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        
+        .file-input-label {
+            display: block;
+            padding: 12px 15px;
+            background: #f1f3f9;
+            border-radius: 8px;
+            border: 2px dashed #cbd3e3;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-input-label:hover {
+            background: #e6ebf5;
+            border-color: var(--primary);
+        }
+        
+        .file-input-label i {
+            display: block;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        .file-input {
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            width: 100%;
+            height: 100%;
+            cursor: pointer;
+        }
+        
+        .service-item {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.4s;
+            height: 100%;
+            border: 1px solid rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        
+        .service-item:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+        }
+        
+        .service-item i {
+            color: var(--primary);
+            background: rgba(106, 17, 203, 0.1);
+            width: 80px;
+            height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            font-size: 2.5rem;
+            transition: all 0.3s;
+        }
+        
+        .service-item:hover i {
+            background: var(--primary);
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .font-preview {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        .font-preview h3 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .preview-text {
+            font-size: 1.8rem;
+            line-height: 1.6;
+            text-align: center;
+            font-weight: 500;
+            color: var(--dark);
+            transition: all 0.3s;
+        }
+        
+        .footer {
+            color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9rem;
+            padding: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .preview-text {
+                font-size: 1.4rem;
+            }
+            
+            .header h1 {
+                font-size: 1.8rem;
+            }
+        }

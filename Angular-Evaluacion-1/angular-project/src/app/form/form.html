@@ -1,0 +1,130 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous">
+
+<!-- Favicon -->
+    <!-- <link href="img/favicon.ico" rel="icon"> -->
+    <link href="../../../public/img/favicon.ico" rel="icon">
+
+    <!-- Google Web Fonts -->
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet"> 
+
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.10.0/css/all.min.css" rel="stylesheet">
+
+    <!-- Libraries Stylesheet -->
+    <!-- <link href="lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet"> -->
+    <link href="../../../public/lib/owlcarousel/assets/owl.carousel.min.css" rel="stylesheet">
+    <!-- <link href="lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" /> -->
+     <link href="../../../public/lib/tempusdominus/css/tempusdominus-bootstrap-4.min.css" rel="stylesheet" />
+
+    <!-- Customized Bootstrap Stylesheet -->
+    <!-- <link href="css/style.css" rel="stylesheet"> -->
+    <link href="../../../public/css/style.css" rel="stylesheet">
+<div class="container">
+        <div class="row justify-content-center mb-4">
+            <div class="col-md-8 text-center">
+                <h1 class="text-white mb-3"><i class="bi bi-layout-split"></i> Formularios con Bootstrap</h1>
+                <p class="lead text-white">Ejemplo de diseño con columnas y diferentes tipos de inputs</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <!-- Columna izquierda con el div solicitado -->
+            <div class="col-lg-6 col-md-6 mb-4">
+                <div class="service-item bg-white text-center mb-2 py-5 px-4">
+                    <i class="fas fa-route fa-2x mx-auto mb-4"></i>
+                    <h3 class="mb-3">Travel Guide</h3>
+                    <p class="m-0 fs-5">Justo sit justo eos amet tempor amet clita amet ipsum eos elitr. Amet lorem est amet labore eos sit elitr. Diam dolor et sit dolor eos lorem. Ipsum diam dolor magna.</p>
+                </div>
+
+            </div>
+            
+            <!-- Columna derecha con formularios -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4 class="mb-0"><i class="bi bi-input-cursor-text"></i> Formulario de Ejemplo</h4>
+                    </div>
+                    <div class="card-body">
+                        <!-- Sección de inputs de color -->
+                        <div class="form-section">
+                            <h5><i class="bi bi-palette"></i> Selección de Colores</h5>
+                            <div class="mb-3">
+                                <label for="color1" class="form-label">Color Primario</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color" id="color1" value="#4b6cb7" title="Elige tu color">
+                                    <span class="color-preview" style="background-color: #4b6cb7"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="color2" class="form-label">Color Secundario</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color" id="color2" value="#3498db" title="Elige tu color">
+                                    <span class="color-preview" style="background-color: #3498db"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="color3" class="form-label">Color de Fondo</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color" id="color3" value="#f8f9fa" title="Elige tu color">
+                                    <span class="color-preview" style="background-color: #f8f9fa"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="color4" class="form-label">Color de Texto</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color" id="color4" value="#333333" title="Elige tu color">
+                                    <span class="color-preview" style="background-color: #333333"></span>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="color5" class="form-label">Color de Énfasis</label>
+                                <div class="d-flex align-items-center">
+                                    <input type="color" class="form-control form-control-color" id="color5" value="#e74c3c" title="Elige tu color">
+                                    <span class="color-preview" style="background-color: #e74c3c"></span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sección de inputs numéricos -->
+                        <div class="form-section">
+                            <h5><i class="bi bi-123"></i> Tamaño de fuente</h5>
+                            <div class="mb-3">
+                                <label for="number1" class="form-label">Titulos</label>
+                                <input type="number" class="form-control" id="number1" min="1" max="100" value="10">
+                            </div>
+                            <div class="mb-3">
+                                <label for="number2" class="form-label">Subtitulos</label>
+                                <input type="number" class="form-control" id="number2" step="0.01" min="0" value="24.99">
+                            </div>
+                            <div class="mb-3">
+                                <label for="number3" class="form-label">Textos</label>
+                                <div class="input-group">
+                                    <input type="number" class="form-control" id="number3" min="0" max="100" value="15">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Sección de inputs de archivos -->
+                        <div class="form-section">
+                            <h5><i class="bi bi-folder2-open"></i> Carga de tipografia</h5>
+                            <div class="mb-3">
+                                <label for="file1" class="form-label">Seleccionar Tipografia Principal (mayoria del texto)</label>
+                                <input class="form-control" type="file" id="file1" accept="image/*">
+                                <div class="form-text">Formato aceptados: .ttf</div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="file2" class="form-label">Seleccionar Tipografia Secundanria (Titulo)</label>
+                                <input class="form-control" type="file" id="file2" accept=".pdf">
+                                <div class="form-text">Formato aceptados: .ttf</div>
+                            </div>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100 btn-submit">
+                            <i class="bi bi-check-circle me-2"></i>Enviar Formulario
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
