@@ -9,7 +9,7 @@ import { HomePage } from './home-page/home-page';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TopBar, Header,Form, FormFull, StylesTest, HomePage],
+  imports: [RouterOutlet, TopBar, Header, HomePage],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
