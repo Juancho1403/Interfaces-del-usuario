@@ -5,11 +5,12 @@ import { Form } from './form/form'
 import { FormFull } from './form-full/form-full';
 import { StylesTest } from './styles-test/styles-test';
 import { Header } from './header/header';
+import { Footer } from './footer/footer';
 import { HomePage } from './home-page/home-page';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TopBar, Header, HomePage],
+  imports: [RouterOutlet, TopBar, Header, Footer, HomePage],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

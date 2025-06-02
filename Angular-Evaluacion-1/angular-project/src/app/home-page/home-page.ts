@@ -10,10 +10,10 @@ import { Registration } from '../registration/registration';
 import { Team } from '../team/team';
 import { Testimonial } from '../testimonial/testimonial';
 import { Blog } from '../blog/blog';
-import { Footer } from '../footer/footer';
+
 @Component({
   selector: 'app-home-page',
-  imports: [Banner, Booking, About, Features, Destination, Service,Packages, Registration, Team, Testimonial, Blog, Footer],
+  imports: [Banner, Booking, About, Features, Destination, Service,Packages, Registration, Team, Testimonial, Blog],
   templateUrl: './home-page.html',
   styleUrl: './home-page.css'
 })
