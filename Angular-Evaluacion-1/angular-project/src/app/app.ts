@@ -7,10 +7,12 @@ import { StylesTest } from './styles-test/styles-test';
 import { Header } from './header/header';
 import { Footer } from './footer/footer';
 import { HomePage } from './home-page/home-page';
+import { Login } from './login/login';
+
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, TopBar, Header, Footer, HomePage],
+  imports: [RouterOutlet, TopBar, Header, Footer, HomePage, Login],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

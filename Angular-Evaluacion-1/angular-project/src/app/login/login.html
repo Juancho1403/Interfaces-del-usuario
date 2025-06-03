@@ -1,0 +1,7 @@
+<div class="login-box">
+  <h2>Login</h2>
+  <input [(ngModel)]="username" class="login-input" placeholder="Usuario" />
+  <input [(ngModel)]="password" type="password" class="login-input" placeholder="Contraseña" />
+  <button class="login-btn" (click)="login()">Iniciar Sesión</button>
+  <p class="login-error">{{ error }}</p>
+</div>
