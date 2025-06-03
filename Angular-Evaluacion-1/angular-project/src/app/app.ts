@@ -12,11 +12,7 @@ import { Login } from './login/login';
 
 @Component({
   selector: 'app-root',
-<<<<<<< HEAD
-  imports: [RouterOutlet, TopBar, Header, Footer, HomePage, Login],
-=======
   imports: [RouterOutlet, TopBar, Header, Footer],
->>>>>>> e9924ff (remove the unnecesary components from app because these are in router-outlet)
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
