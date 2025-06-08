@@ -1,6 +1,12 @@
 #textSec {
     color: rgb(101, 101, 101);
 }
+
 #previewSection {
     background-color: #F3F3F3;
+}
+
+.form-group {
+    
+    padding-bottom: 40px; /* Ajusta el valor según lo que necesites */
 }
