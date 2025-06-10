@@ -48,82 +48,95 @@
           </div>
 
           <!-- Módulo de Colores -->
+          <form [formGroup]="colorForm" (ngSubmit)="onSubmit()">
+          
           <div id="colors" class="module-content active">
             <h3 class="section-title">Personalización de Colores</h3>
-
+            <div class="mb-3">
+              <label class="form-label">Nombre de la paleta</label>
+              <input type="text" class="form-control" formControlName="nombre_paleta">
+              @if (colorForm.get('nombre_paleta')?.invalid && colorForm.get('nombre_paleta')?.touched) {
+                <div class="text-danger">
+                    El nombre es requerido
+                </div>
+              }
+            </div>
             <div class="form-group">
               <label class="form-label">Color Primario (60%)</label>
+              <span class="ms-2">{{ colorForm.get('color_primario')?.value }}</span>
               <input
                 type="color"
                 class="form-control"
                 id="colorPrimary"
-                value="#4361ee"
+                formControlName="color_primario"
               />
             </div>
 
             <div class="form-group">
               <label class="form-label">Color Secundario (30%)</label>
+              <span class="ms-2">{{ colorForm.get('color_secundario')?.value }}</span>
               <input
                 type="color"
                 class="form-control"
                 id="colorSecondary"
-                value="#3a0ca3"
+                formControlName="color_secundario"
               />
             </div>
 
             <div class="form-group">
               <label class="form-label">Color de Acento (10%)</label>
+              <span class="ms-2">{{ colorForm.get('color_terciario')?.value }}</span>
               <input
                 type="color"
                 class="form-control"
                 id="colorAccent"
                 value="#4895ef"
+                formControlName="color_terciario"
               />
             </div>
 
             <div class="form-group">
               <label class="form-label">Color de Texto</label>
+              <span class="ms-2">{{ colorForm.get('color_texto')?.value }}</span>
               <input
                 type="color"
                 class="form-control"
                 id="colorText"
                 value="#2b2d42"
+                formControlName="color_texto"
               />
             </div>
 
             <div class="form-group">
               <label class="form-label">Color de Fondo</label>
+              <span class="ms-2">{{ colorForm.get('color_texto')?.value }}</span>
               <input
                 type="color"
                 class="form-control"
                 id="colorBackground"
                 value="#f8f9fa"
+                formControlName="color_fondo"
               />
             </div>
-
-            <div class="palette-preview">
-              <div
-                class="palette-color"
-                style="background-color: var(--color-primary)"
-              ></div>
-              <div
-                class="palette-color"
-                style="background-color: var(--color-secondary)"
-              ></div>
-              <div
-                class="palette-color"
-                style="background-color: var(--color-accent)"
-              ></div>
-              <div
-                class="palette-color"
-                style="background-color: var(--color-text)"
-              ></div>
-              <div
-                class="palette-color"
-                style="background-color: var(--color-background)"
-              ></div>
-            </div>
+            <div class="d-flex justify-content-center align-items-center">
+                <button type="submit" class="btn btn-primary py-md-3 px-md-5 mt-2">
+                  {{ isEditing ? 'Actualizar' : ' Crear Paleta ' }}
+                </button>
+                
+                @if (isEditing) {
+                    <button type="button" class="btn btn-secondary py-md-3 px-md-5 mt-2 ml-4" (click)="initForm()">
+                        Cancelar
+                    </button>
+                }
+              </div>
+              <!-- Mensajes de error -->
+              @if (errorMessage) {
+                <div class="alert alert-danger py-md-3 px-md-5 mt-5 ">
+                    {{ errorMessage }}
+                </div>
+              }
           </div>
+          </form>
 
           <!-- Módulo de Fuentes -->
           <div id="fonts" class="module-content">
@@ -180,15 +193,13 @@
                 <input type="file" accept=".ttf" />
               </div>
             </div>
-          </div>
-          <div class="container">
-            <div class="row">
-              <div class="d-flex justify-content-center align-items-center">
-                <button class="btn btn-primary py-md-3 px-md-5 mt-2">
-                  Guardar Cambios
-                </button>
+              <div class="container">
+                <div class="row">
+                  <div class="d-flex justify-content-center align-items-center">
+                    <button class="btn btn-primary py-md-3 px-md-5 mt-2"> Guardar Cambios </button>
+                  </div>
+                </div>
               </div>
-            </div>
           </div>
         </div>
       </div>
@@ -222,13 +233,6 @@
           </p>
         </div>
       </div>
-      <!-- <div class="preview-card">
-          <h1 class="preview-title">Título Principal</h1>
-          <h2 class="preview-subtitle">Subtítulo Descriptivo</h2>
-          <p class="preview-text">Este es un párrafo de ejemplo que muestra cómo se verá el texto en tu sitio web. Aquí puedes incluir descripciones, contenido informativo o cualquier texto que desees mostrar a tus visitantes.</p>
-          <p class="preview-text">La tipografía seleccionada debe ser legible y agradable a la vista. Recuerda que una buena elección de fuentes mejora significativamente la experiencia del usuario.</p>
-          <button class="btn btn-primary btn-block">Botón de Acción</button>
-        </div> -->
 
       <div class="preview-card">
         <h3 class="preview-subtitle">Configuración Actual</h3>
@@ -314,6 +318,105 @@
       </div>
     </div>
   </div>
+
+<!-- Lista de paletas -->
+  <div class="card">
+    <div class="card-header">
+      Paletas Existentes
+    </div>
+
+    @if (isLoading) {
+        <div class="card-body text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <p class="mt-2">Cargando paletas...</p>
+        </div>
+}
+
+@if (!isLoading && colors.length === 0) {
+    <div class="card-body">
+        <p class="text-center">No se encontraron paletas de colores.</p>
+    </div>
+
+}
+
+@if (!isLoading && colors.length!=0) {
+    <div class="card-body">
+      <div class="table-responsive">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Primario</th>
+              <th>Secundario</th>
+              <th>Terciario</th>
+              <th>Texto</th>
+              <th>Fondo</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (color of colors; track $index) {
+                <tr>
+              <td>{{ color.nombre_paleta }}</td>
+              <p>colors-crud works!</p>
+
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="color-preview me-2" [style.background-color]="color.color_primario"></div>
+                  {{ color.color_primario }}
+                </div>
+              </td>
+              
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="color-preview me-2" [style.background-color]="color.color_secundario"></div>
+                  {{ color.color_secundario }}
+                </div>
+              </td>
+              
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="color-preview me-2" [style.background-color]="color.color_terciario"></div>
+                  {{ color.color_terciario }}
+                </div>
+              </td>
+              
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="color-preview me-2" [style.background-color]="color.color_texto"></div>
+                  {{ color.color_texto }}
+                </div>
+              </td>
+              
+              <td>
+                <div class="d-flex align-items-center">
+                  <div class="color-preview me-2" [style.background-color]="color.color_fondo"></div>
+                  {{ color.color_fondo }}
+                </div>
+              </td>
+              
+              <td>
+                <div class="btn-group">
+                  <button class="btn btn-sm btn-warning me-1" (click)="selectColor(color)">
+                    <i class="bi bi-pencil"></i> Editar
+                  </button>
+                  <button class="btn btn-sm btn-danger" (click)="deleteColor(color.id)">
+                    <i class="bi bi-trash"></i> Eliminar
+                  </button>
+                </div>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+}
+
+  </div>
+
 </div>
 
 <script>
