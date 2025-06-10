@@ -1,0 +1,8 @@
+.testimonial-text {
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.08);
+  border-radius: 5px;
+  transition: 0.3s ease-in-out;
+}
+.testimonial-text:hover {
+  transform: translateY(-5px);
+}
