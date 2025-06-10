@@ -1,12 +1,32 @@
 #textSec {
-    color: rgb(101, 101, 101);
+  color: rgb(101, 101, 101);
 }
 
 #previewSection {
-    background-color: #F3F3F3;
+  background-color: #f3f3f3;
 }
 
 .form-group {
-    
-    padding-bottom: 40px; /* Ajusta el valor según lo que necesites */
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  padding-bottom: 40px; /* Ajusta el valor según lo que necesites */
+}
+
+/* Agrega padding al contenedor principal del editor */
+.editor-container {
+  padding: 2rem 2rem 1.5rem 2rem; /* Arriba, derecha, abajo, izquierda */
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+}
+
+/* Espaciado interno para los módulos de personalización */
+.module-content {
+  padding: 1.5rem 1rem;
+}
+
+/* Separar barras de progreso del borde en la vista previa */
+.preview-card .progress {
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
 }
