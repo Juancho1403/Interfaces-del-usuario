@@ -347,6 +347,7 @@
         <table class="table table-hover">
           <thead>
             <tr>
+              <th>Seleccionar</th>
               <th>Nombre</th>
               <th>Primario</th>
               <th>Secundario</th>
@@ -359,8 +360,16 @@
           <tbody>
             @for (color of colors; track $index) {
                 <tr>
+                  <td>
+                    <input 
+                      type="radio" 
+                      name="activePalette" 
+                      [checked]="selectedPaletteId === color.id"
+                      (change)="selectPalette(color)"
+                    >
+                  </td>
+
               <td>{{ color.nombre_paleta }}</td>
-              <p>colors-crud works!</p>
 
               <td>
                 <div class="d-flex align-items-center">

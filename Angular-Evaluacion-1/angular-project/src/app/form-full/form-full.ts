@@ -1,6 +1,7 @@
-import { Component, AfterViewInit } from '@angular/core';
+import { Component, AfterViewInit, inject } from '@angular/core';
 import { ColorsService } from '../services/colors.service';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import  { Theme } from '../core/theme';
 
 @Component({
     selector: 'app-form-full',
@@ -228,5 +229,17 @@ export class FormFull implements AfterViewInit {
                 }, 2000);
             }, 1000);
         });
+    }
+
+    // Inyectar el servicio de tema
+    themeService = inject(Theme);
+  
+    // Añade una variable para la paleta seleccionada
+    selectedPaletteId: number | null = null;
+
+    // Método para seleccionar una paleta
+    selectPalette(palette: any) {
+      this.selectedPaletteId = palette.id;
+      this.themeService.setActivePalette(palette);
     }
 }
