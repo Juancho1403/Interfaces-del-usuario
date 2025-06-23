@@ -1,0 +1,20 @@
+.color-preview {
+  width: 20px;
+  height: 20px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+.card {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.table-hover tbody tr:hover {
+  background-color: rgba(0,0,0,0.03);
+}
