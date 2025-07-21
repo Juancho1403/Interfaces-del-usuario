@@ -1,0 +1,389 @@
+/* Variables globales por defecto */
+:root {
+  --color-primary: #7AB730;
+  --color-secondary: #5f8f25;
+  --color-accent: #89b70d;
+  --color-text: #212121;
+  --color-background: #FFFFFF;
+  --font-heading: 'Montserrat, Arial, sans-serif';
+  --font-main: 'Montserrat, Arial, sans-serif';
+  --font-size-title: 40px;
+  --font-size-subtitle: 24px;
+  --font-size-paragraph: 16px;
+}
+
+body {
+  font-family: var(--font-main, 'Montserrat, Arial, sans-serif');
+  background-color: var(--color-background, #fff);
+  color: var(--color-text, #212121);
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, 'Montserrat, Arial, sans-serif');
+}
+
+h1 {
+  font-size: var(--font-size-title, 40px);
+}
+h2 {
+  font-size: var(--font-size-subtitle, 24px);
+}
+p, span, li, td, th {
+  font-size: var(--font-size-paragraph, 16px);
+}
+
+/* Puedes agregar más reglas para botones, links, etc. usando las variables de color */
+
+.btn-primary {
+  background-color: var(--color-primary, #7AB730);
+  border-color: var(--color-primary, #7AB730);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+  background-color: var(--color-secondary, #5f8f25);
+  border-color: var(--color-secondary, #5f8f25);
+}
+
+a, .nav-link {
+  color: var(--color-primary, #7AB730);
+}
+
+a:hover, .nav-link.active {
+  color: var(--color-secondary, #5f8f25);
+}
+
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Prevenir scroll horizontal */
+html, body {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Asegurar que los contenedores no excedan el ancho */
+.container-fluid {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Ajustar el navbar para evitar desbordamiento */
+.navbar {
+  max-width: 100%;
+}
+
+.navbar-nav {
+  flex-wrap: wrap;
+}
+
+/* Asegurar que las imágenes no causen scroll horizontal */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Ajustar el carrusel para evitar desbordamiento */
+.carousel {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+/* Ajustar las secciones de contenido */
+.container {
+  max-width: 100%;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Asegurar que los formularios no excedan el ancho */
+.form-control {
+  max-width: 100%;
+}
+
+/* Ajustar las tablas para dispositivos móviles */
+@media (max-width: 768px) {
+  .table-responsive {
+    overflow-x: auto;
+  }
+  
+  .navbar-nav {
+    text-align: center;
+  }
+  
+  .dropdown-menu {
+    text-align: center;
+  }
+}
+
+/* Estilos personalizados para el carrusel */
+.carousel {
+  margin-bottom: 0;
+}
+
+.carousel-item {
+  height: 600px;
+  overflow: hidden;
+}
+
+.carousel-item img {
+  object-fit: cover;
+  height: 100%;
+  width: 100%;
+}
+
+.carousel-caption {
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 10px;
+  padding: 20px;
+}
+
+/* Estilos para los controles del carrusel */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 50px;
+  height: 50px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.carousel-control-prev {
+  left: 20px;
+}
+
+.carousel-control-next {
+  right: 20px;
+}
+
+/* Estilos para los indicadores del carrusel */
+.carousel-indicators {
+  bottom: 20px;
+}
+
+.carousel-indicators button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin: 0 5px;
+}
+
+/* Estilos para el fade effect */
+.carousel-fade .carousel-item {
+  opacity: 0;
+  transition: opacity 0.6s ease-in-out;
+}
+
+.carousel-fade .carousel-item.active {
+  opacity: 1;
+}
+
+/* Estilos para el navbar y topbar */
+.navbar {
+  z-index: 1000;
+}
+
+.topbar {
+  z-index: 1001;
+}
+
+/* Estilos para el contenido del carrusel */
+.carousel-caption h1 {
+  font-size: 3.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.carousel-caption h4 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+  .carousel-caption h1 {
+    font-size: 2rem;
+  }
+  
+  .carousel-caption h4 {
+    font-size: 1rem;
+  }
+  
+  .carousel-item {
+    height: 400px;
+  }
+}
+
+/* Features Section (Competitive Pricing, Best Services, Worldwide Coverage) */
+.feature-box {
+  display: flex;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+.feature-icon {
+  background: #7AB730;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0;
+  margin-right: 2rem;
+}
+.feature-icon i {
+  color: #fff;
+  font-size: 3rem;
+}
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.feature-text h5 {
+  font-size: 2.2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.feature-text p {
+  font-size: 1.5rem;
+  color: #666;
+}
+@media (max-width: 991px) {
+  .feature-box {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .feature-icon {
+    margin-right: 0;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Services Section (Travel Guide, Ticket Booking, Hotel Booking) */
+.service-item {
+  border: none;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.04);
+  border-radius: 0;
+  transition: box-shadow 0.2s;
+  background: #fff;
+}
+.service-item:hover {
+  box-shadow: 0 4px 32px rgba(0,0,0,0.08);
+}
+.service-item i {
+  color: #7AB730;
+  font-size: 4rem;
+  border: 2px solid #7AB730;
+  border-radius: 0;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: inline-block;
+}
+.service-item h5 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+.service-item p {
+  font-size: 1.3rem;
+  color: #666;
+}
+
+/* Carousel Controls (Flechas) */
+.carousel-control-prev,
+.carousel-control-next {
+  width: 60px;
+  height: 60px;
+  background: rgba(34, 34, 34, 0.6) !important;
+  border-radius: 0 !important;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 1 !important;
+  transition: background 0.2s;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-image: none !important;
+  width: 2.5rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.carousel-control-prev-icon:after {
+  content: '\2039'; /* Unicode flecha izquierda */
+  font-size: 2.5rem;
+  color: #fff;
+  font-weight: bold;
+  display: block;
+}
+.carousel-control-next-icon:after {
+  content: '\203A'; /* Unicode flecha derecha */
+  font-size: 2.5rem;
+  color: #fff;
+  font-weight: bold;
+  display: block;
+}
+.carousel-control-prev {
+  left: 30px;
+}
+.carousel-control-next {
+  right: 30px;
+}
+@media (max-width: 768px) {
+  .carousel-control-prev,
+  .carousel-control-next {
+    width: 40px;
+    height: 40px;
+  }
+  .carousel-control-prev {
+    left: 10px;
+  }
+  .carousel-control-next {
+    right: 10px;
+  }
+  .carousel-control-prev-icon:after,
+  .carousel-control-next-icon:after {
+    font-size: 1.5rem;
+  }
+}
