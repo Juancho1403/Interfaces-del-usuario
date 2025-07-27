@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   getColores,
   createColor,
@@ -10,7 +10,6 @@ import {
   deleteTipografiaTamanio
 } from '../api';
 import Home from './Home';
-import { Navigate } from 'react-router-dom';
 
 const COLORES_ORIGINALES = {
   nombre_paleta: '',
@@ -34,12 +33,34 @@ const Configuraciones = () => {
   const [paletas, setPaletas] = useState([]);
   const [editandoId, setEditandoId] = useState(null);
   const [colorForm, setColorForm] = useState({ ...COLORES_ORIGINALES });
-  const [isAdmin, setIsAdmin] = useState(false);
   const [configs, setConfigs] = useState([]);
   const [configForm, setConfigForm] = useState({ ...CONFIG_ORIGINAL });
 
+  // Definir fetchPaletas y fetchConfigs con useCallback ANTES del useEffect principal
+  const fetchPaletas = useCallback(async () => {
+    try {
+      const response = await getColores();
+      setPaletas(response);
+    } catch (error) {
+      console.error('Error al cargar paletas:', error);
+      alert('No se pudieron cargar las paletas.');
+    }
+  }, []);
+
+  const fetchConfigs = useCallback(async () => {
+    try {
+      const res = await getTipografiaTamanio();
+      setConfigs(res);
+      if (res.length > 0) {
+        aplicarConfig(res[res.length - 1]);
+      }
+    } catch (error) {
+      console.error('Error al cargar configuraciones:', error);
+      // Puede no haber configs
+    }
+  }, []);
+
   useEffect(() => {
-    setIsAdmin(localStorage.getItem('role') === 'admin');
     // Leer configuración de colores guardada
     const coloresGuardados = localStorage.getItem('coloresConfig');
     if (coloresGuardados) {
@@ -58,7 +79,7 @@ const Configuraciones = () => {
     } else {
       fetchConfigs();
     }
-  }, []);
+  }, [fetchPaletas, fetchConfigs]);
 
   useEffect(() => {
     aplicarEstilos(colorForm);
@@ -67,16 +88,6 @@ const Configuraciones = () => {
   useEffect(() => {
     aplicarConfig(configForm);
   }, [configForm]);
-
-  const fetchPaletas = async () => {
-    try {
-      const response = await getColores();
-      setPaletas(response);
-    } catch (error) {
-      console.error('Error al cargar paletas:', error);
-      alert('No se pudieron cargar las paletas.');
-    }
-  };
 
   const guardarPaleta = async (e) => {
     e.preventDefault();
@@ -129,19 +140,6 @@ const Configuraciones = () => {
   }
 
   // --- Tipografías y Tamaños ---
-  const fetchConfigs = async () => {
-    try {
-      const res = await getTipografiaTamanio();
-      setConfigs(res);
-      if (res.length > 0) {
-        aplicarConfig(res[res.length - 1]);
-      }
-    } catch (error) {
-      console.error('Error al cargar configuraciones:', error);
-      // Puede no haber configs
-    }
-  };
-
   const guardarConfig = async (e) => {
     e.preventDefault();
     try {
@@ -188,29 +186,6 @@ const Configuraciones = () => {
     localStorage.setItem('tipografiaConfig', JSON.stringify(config));
   }
 
-  // Elimino la restricción de solo admin para mostrar la vista a todos
-  // if (!isAdmin) {
-  //   return <>
-  //     <div className="alert alert-danger text-center mt-5">
-  //       No eres administrador, no puedes ver la vista de configuraciones.
-  //     </div>
-  //     <Navigate to="/" replace />
-  //   </>;
-  // }
-
-  // Lista de fuentes sugeridas
-  const fuentesSugeridas = [
-    'Montserrat, Arial, sans-serif',
-    'Arial, Helvetica, sans-serif',
-    'Times New Roman, Times, serif',
-    'Georgia, serif',
-    'Courier New, Courier, monospace',
-    'Verdana, Geneva, sans-serif',
-    'Tahoma, Geneva, sans-serif',
-    'Trebuchet MS, Helvetica, sans-serif',
-    'Lucida Console, Monaco, monospace'
-  ];
-
   return (
     <div className="container my-5">
       <div className="row">
@@ -231,11 +206,11 @@ const Configuraciones = () => {
                   <h4 className="section-title">Paletas Guardadas</h4>
                   {!paletas.length && <div className="text-muted">No hay paletas guardadas.</div>}
                   {paletas.map((paleta) => (
-                    <div key={paleta.id} className="d-flex align-items-center mb-2">
-                      <span className="me-2">{paleta.nombre_paleta}</span>
-                      <div className="d-flex gap-2">
-                        <button onClick={() => aplicarEstilos(paleta)} className="btn btn-info btn-sm me-1" title="Aplicar">Aplicar</button>
-                        <button onClick={() => editarPaleta(paleta)} className="btn btn-warning btn-sm me-1" title="Editar">Editar</button>
+                    <div key={paleta.id} className="paleta-card">
+                      <span className="paleta-nombre">{paleta.nombre_paleta}</span>
+                      <div className="paleta-actions">
+                        <button onClick={() => aplicarEstilos(paleta)} className="btn btn-info btn-sm" title="Aplicar">Aplicar</button>
+                        <button onClick={() => editarPaleta(paleta)} className="btn btn-warning btn-sm" title="Editar">Editar</button>
                         <button onClick={() => eliminarPaleta(paleta.id)} className="btn btn-danger btn-sm" title="Eliminar">Eliminar</button>
                       </div>
                     </div>

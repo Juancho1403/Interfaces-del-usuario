@@ -13170,7 +13170,7 @@
     display: block;
     min-height: 1.5rem;
     padding-left: 1.5rem;
-    color-adjust: exact;
+    print-color-adjust: exact;
   }
   
   .custom-control-inline {
@@ -14242,10 +14242,6 @@
     padding-right: 0.5rem;
     color: #6c757d;
     content: "/";
-  }
-  
-  .breadcrumb-item + .breadcrumb-item:hover::before {
-    text-decoration: underline;
   }
   
   .breadcrumb-item + .breadcrumb-item:hover::before {

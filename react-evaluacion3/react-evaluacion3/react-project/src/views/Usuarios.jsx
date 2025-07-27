@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import logoUsuarios from '../assets/logo-usuarios.svg';
-import { getUsuarios, createUsuario, updateUsuario, deleteUsuario } from '../api';
+import { getUsuarios, createUsuario, updateUsuario } from '../api';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
@@ -98,30 +98,48 @@ const Usuarios = () => {
   const [isViewMode, setIsViewMode] = useState(false);
   const [isEditMode, setIsEditMode] = useState(false);
   const [editUserId, setEditUserId] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [users, setUsers] = useState([]);
   const [isAdmin, setIsAdmin] = useState(false);
   // Asegura que existan los siguientes hooks y funciones:
   const [errors, setErrors] = useState({});
 
   // Mueve wizardSteps aquí, antes de cualquier uso
+  // Wizard de 6 fases (todos los campos incluidos)
   const wizardSteps = [
     {
-      label: 'Personal',
+      label: 'Identidad',
       fields: [
-        'id', 'firstName', 'lastName', 'maidenName', 'age', 'gender', 'birthDate', 'image', 'height', 'weight', 'eyeColor', 'hair.color', 'hair.type', 'bloodGroup'
+        'id', 'firstName', 'lastName', 'maidenName', 'age', 'gender', 'birthDate', 'image'
+      ]
+    },
+    {
+      label: 'Físico',
+      fields: [
+        'height', 'weight', 'eyeColor', 'hair.color', 'hair.type', 'bloodGroup'
       ]
     },
     {
       label: 'Contacto',
       fields: [
-        'email', 'phone', 'username', 'password', 'ip', 'macAddress', 'address.address', 'address.city', 'address.state', 'address.stateCode', 'address.postalCode', 'address.coordinates.lat', 'address.coordinates.lng', 'address.country'
+        'email', 'phone', 'username', 'password', 'ip', 'macAddress'
+      ]
+    },
+    {
+      label: 'Dirección',
+      fields: [
+        'address.address', 'address.city', 'address.state', 'address.stateCode', 'address.postalCode', 'address.coordinates.lat', 'address.coordinates.lng', 'address.country'
       ]
     },
     {
       label: 'Profesional',
       fields: [
-        'university', 'company.name', 'company.title', 'company.department', 'company.address.address', 'company.address.city', 'company.address.state', 'company.address.stateCode', 'company.address.postalCode', 'company.address.coordinates.lat', 'company.address.coordinates.lng', 'company.address.country', 'bank.cardExpire', 'bank.cardNumber', 'bank.cardType', 'bank.currency', 'bank.iban', 'ein', 'ssn', 'userAgent', 'crypto.coin', 'crypto.wallet', 'crypto.network', 'role'
+        'university', 'company.name', 'company.title', 'company.department', 'company.address.address', 'company.address.city', 'company.address.state', 'company.address.stateCode', 'company.address.postalCode', 'company.address.coordinates.lat', 'company.address.coordinates.lng', 'company.address.country', 'role'
+      ]
+    },
+    {
+      label: 'Finanzas y Otros',
+      fields: [
+        'bank.cardExpire', 'bank.cardNumber', 'bank.cardType', 'bank.currency', 'bank.iban', 'ein', 'ssn', 'userAgent', 'crypto.coin', 'crypto.wallet', 'crypto.network'
       ]
     }
   ];
@@ -160,7 +178,6 @@ const Usuarios = () => {
     if (!validateStep(currentStep - 1)) {
       return;
     }
-    setIsLoading(true);
     try {
       if (isEditMode) {
         await updateUsuario(editUserId, formData);
@@ -174,21 +191,51 @@ const Usuarios = () => {
     } catch (error) {
       console.error('Error al guardar usuario:', error);
       alert('Error al guardar usuario: ' + (error.response?.data?.message || error.message));
-    } finally {
-      setIsLoading(false);
     }
   };
 
   const downloadPDF = () => {
-    const doc = new jsPDF();
-    doc.addImage(logoUsuarios, 'SVG', 10, 10, 20, 20);
-    doc.text('Lista de Usuarios', 14, 35);
-    autoTable(doc, {
-      startY: 40,
-      head: [basicFields.map(f => basicLabels[f] || f)],
-      body: users.map(user => basicFields.map(f => user[f] ?? '')),
-    });
-    doc.save('usuarios.pdf');
+    if (!users || users.length === 0) {
+      alert('No hay usuarios para exportar.');
+      return;
+    }
+    try {
+      const doc = new jsPDF();
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const logoWidth = 30;
+      const logoX = (pageWidth - logoWidth) / 2;
+      let logoOk = false;
+      try {
+        doc.addImage(logoUsuarios, 'SVG', logoX, 10, logoWidth, 30);
+        logoOk = true;
+      } catch (e) {
+        // Si el logo SVG falla, lo omitimos
+        logoOk = false;
+      }
+      doc.setFontSize(18);
+      doc.text('Lista de Usuarios', pageWidth / 2, logoOk ? 48 : 24, { align: 'center' });
+      const tableBody = users.map(user => basicFields.map(f => {
+        let val = user[f];
+        if (val === null || val === undefined) return '';
+        if (typeof val === 'object') return JSON.stringify(val);
+        return String(val);
+      }));
+      autoTable(doc, {
+        startY: logoOk ? 55 : 30,
+        head: [basicFields.map(f => basicLabels[f] || f)],
+        body: tableBody,
+        styles: { fontSize: 10, cellPadding: 2 },
+        headStyles: { fillColor: [122, 183, 48], textColor: 255, halign: 'center' },
+        bodyStyles: { halign: 'center' },
+        theme: 'grid',
+        margin: { left: 10, right: 10 },
+        tableWidth: 'auto',
+      });
+      doc.save('usuarios.pdf');
+      alert('PDF descargado correctamente.');
+    } catch (e) {
+      alert('Error al generar el PDF.');
+    }
   };
 
   const downloadExcel = () => {
@@ -233,39 +280,102 @@ const Usuarios = () => {
   };
 
   // Validaciones
-  const validateLettersOnly = (value) => /^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]*$/.test(value);
-  const validateNumbersOnly = (value) => /^\d*$/.test(value);
-  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  const validatePhone = (value) => /^\+?\d{7,15}$/.test(value);
-  const validateUsername = (value) => /^[a-zA-Z0-9_-]{3,20}$/.test(value);
-
-  // Validaciones en español para cada campo
   const validateField = (field, value) => {
+    // Letras
     if ([
-      'firstName', 'lastName', 'maidenName', 'company.name', 'company.department', 'company.title', 'company.address.city', 'company.address.state', 'company.address.country', 'address.city', 'address.state', 'address.country', 'university'
+      'firstName', 'lastName', 'maidenName', 'company.name', 'company.department', 'company.title', 'company.address.address', 'company.address.city', 'company.address.state', 'company.address.stateCode', 'company.address.country', 'address.address', 'address.city', 'address.state', 'address.stateCode', 'address.country', 'university', 'eyeColor', 'hair.color', 'hair.type', 'crypto.coin', 'crypto.network'
     ].includes(field) && (!value || !/^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\s]*$/.test(value))) {
       return 'Solo letras';
     }
+    // Números estrictos (no permitir letras ni símbolos)
     if ([
-      'age', 'height', 'weight', 'address.postalCode', 'company.address.postalCode', 'address.coordinates.lat', 'address.coordinates.lng', 'company.address.coordinates.lat', 'company.address.coordinates.lng', 'ein', 'ssn'
-    ].includes(field) && (value === '' || isNaN(value))) {
-      return 'Debe ser numérico';
+      'id', 'age', 'height', 'weight', 'address.postalCode', 'company.address.postalCode', 'address.coordinates.lat', 'address.coordinates.lng', 'company.address.coordinates.lat', 'company.address.coordinates.lng', 'ein', 'ssn', 'bank.cardNumber'
+    ].includes(field)) {
+      if (value === '' || !/^-?\d+(\.\d+)?$/.test(value)) {
+        return 'Debe ser numérico';
+      }
     }
+    // Email
     if (field === 'email' && (!value || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))) {
       return 'Correo electrónico inválido';
     }
-    if (field === 'phone' && (!value || !/^\+?\d{7,15}$/.test(value))) {
-      return 'Teléfono inválido';
+    // Teléfono: solo números y opcionalmente + al inicio, longitud 7-15
+    if (field === 'phone') {
+      if (!value || !/^\+?\d{7,15}$/.test(value)) {
+        return 'Teléfono inválido (solo números, 7-15 dígitos)';
+      }
     }
+    // Username
     if (field === 'username' && (!value || !/^[a-zA-Z0-9_-]{3,20}$/.test(value))) {
       return 'Usuario inválido (3-20 caracteres, letras, números, guion o guion bajo)';
     }
+    // Password
     if (field === 'password' && (!value || value.length < 6)) {
       return 'La contraseña debe tener al menos 6 caracteres';
     }
-    if (field === 'birthDate' && (!value || !/^\d{4}-\d{1,2}-\d{1,2}$/.test(value))) {
-      return 'Formato de fecha: aaaa-mm-dd';
+    // Fecha de nacimiento: formato y no permitir fechas futuras ni menores de 1900
+    if (field === 'birthDate') {
+      if (!value || !/^\d{4}-\d{2}-\d{2}$/.test(value)) {
+        return 'Formato de fecha: aaaa-mm-dd';
+      }
+      const date = new Date(value);
+      const now = new Date();
+      if (date > now) {
+        return 'La fecha de nacimiento no puede ser futura';
+      }
+      if (date.getFullYear() < 1900) {
+        return 'La fecha de nacimiento no puede ser menor a 1900';
+      }
     }
+    // IBAN
+    if (field === 'bank.iban' && value && !/^([A-Z]{2}\d{2}[A-Z0-9]{1,30})$/.test(value)) {
+      return 'IBAN inválido';
+    }
+    // Card Expire
+    if (field === 'bank.cardExpire' && value && !/^(0[1-9]|1[0-2])\/(\d{2})$/.test(value)) {
+      return 'Formato de vencimiento: MM/YY';
+    }
+    // Card Type
+    if (field === 'bank.cardType' && value && !['Visa','Mastercard','Amex','Diners','Discover','JCB'].includes(value)) {
+      return 'Tipo de tarjeta inválido';
+    }
+    // Currency
+    if (field === 'bank.currency' && value && !/^[A-Z]{3}$/.test(value)) {
+      return 'Moneda inválida (ej: USD, EUR)';
+    }
+    // Wallet
+    if (field === 'crypto.wallet' && value && value.length < 5) {
+      return 'Wallet inválida';
+    }
+    // UserAgent
+    if (field === 'userAgent' && value && value.length < 5) {
+      return 'UserAgent inválido';
+    }
+    // Imagen URL
+    if (field === 'image' && value && !/^https?:\/\/.+\.(jpg|jpeg|png|gif|svg)$/.test(value)) {
+      return 'URL de imagen inválida';
+    }
+    // MAC Address
+    if (field === 'macAddress' && value && !/^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/.test(value)) {
+      return 'MAC Address inválida';
+    }
+    // IP
+    if (field === 'ip' && value && !/^(\d{1,3}\.){3}\d{1,3}$/.test(value)) {
+      return 'IP inválida';
+    }
+    // bloodGroup
+    if (field === 'bloodGroup' && value && !['A+','A-','B+','B-','AB+','AB-','O+','O-'].includes(value)) {
+      return 'Grupo sanguíneo inválido';
+    }
+    // gender
+    if (field === 'gender' && value && !['male','female'].includes(value)) {
+      return 'Género inválido';
+    }
+    // role
+    if (field === 'role' && value && !['user','admin'].includes(value)) {
+      return 'Rol inválido';
+    }
+    // Campos obligatorios (excepto los explícitamente opcionales)
     if (!value && !['image','eyeColor','hair.color','hair.type','macAddress','ip','userAgent','crypto.coin','crypto.wallet','crypto.network','bank.cardExpire','bank.cardNumber','bank.cardType','bank.currency','bank.iban'].includes(field)) {
       return 'Este campo es obligatorio';
     }
@@ -273,7 +383,6 @@ const Usuarios = () => {
   };
 
   const fetchUsers = useCallback(async () => {
-    setIsLoading(true);
     try {
       const usuarios = await getUsuarios();
       setUsers(usuarios);
@@ -281,7 +390,6 @@ const Usuarios = () => {
       console.error('Error al cargar usuarios:', error);
       alert('Error al cargar usuarios: ' + (error.response?.data?.message || error.message));
     }
-    setIsLoading(false);
   }, []);
 
   // Fetch users (for admin)
@@ -293,7 +401,7 @@ const Usuarios = () => {
   }, [fetchUsers]);
 
   // Wizard navigation
-  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 3));
+  const nextStep = () => setCurrentStep((prev) => Math.min(prev + 1, 6));
   const prevStep = () => setCurrentStep((prev) => Math.max(prev - 1, 1));
 
   // Validación de todos los campos del paso actual
@@ -395,7 +503,7 @@ const Usuarios = () => {
     estado: 'Estado'
   };
 
-  // Generador dinámico de campos para el wizard
+  // Mejorar renderFields para agregar validaciones HTML a cada input
   const renderFields = (fields) => (
     <div className="row">
       {fields.map((field, idx) => {
@@ -408,13 +516,71 @@ const Usuarios = () => {
         });
         // Label amigable
         const label = fieldLabels[name] || fieldParts[fieldParts.length-1].replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-        // Tipo de input
+        // Tipo de input y validaciones HTML
         let type = 'text';
-        if (['age','height','weight','address.postalCode','company.address.postalCode','address.coordinates.lat','address.coordinates.lng','company.address.coordinates.lat','company.address.coordinates.lng'].includes(field)) type = 'number';
-        if (['email'].includes(field)) type = 'email';
-        if (['password'].includes(field)) type = 'password';
-        if (['birthDate'].includes(field)) type = 'date';
-        if (['image'].includes(field)) type = 'url';
+        let inputProps = { required: true };
+        if ([
+          'age','height','weight','address.postalCode','company.address.postalCode','address.coordinates.lat','address.coordinates.lng','company.address.coordinates.lat','company.address.coordinates.lng','ein','ssn','bank.cardNumber'
+        ].includes(field)) {
+          type = 'number';
+          inputProps.min = 0;
+          inputProps.step = 'any';
+          inputProps.pattern = '^\\d+(\\.\\d+)?$';
+        }
+        if (['email'].includes(field)) {
+          type = 'email';
+          inputProps.pattern = '^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$';
+        }
+        if (['password'].includes(field)) {
+          type = 'password';
+          inputProps.minLength = 6;
+        }
+        if (['birthDate'].includes(field)) {
+          type = 'date';
+          inputProps.min = '1900-01-01';
+          inputProps.max = new Date().toISOString().split('T')[0];
+        }
+        if (['image'].includes(field)) {
+          type = 'url';
+          inputProps.pattern = 'https?://.+\\.(jpg|jpeg|png|gif|svg)';
+        }
+        if (field === 'phone') {
+          type = 'tel';
+          inputProps.pattern = '^\\+?\\d{7,15}$';
+          inputProps.title = 'Solo números, 7-15 dígitos, puede iniciar con +';
+        }
+        if ([
+          'firstName', 'lastName', 'maidenName', 'company.name', 'company.department', 'company.title', 'company.address.city', 'company.address.state', 'company.address.country', 'address.city', 'address.state', 'address.country', 'university', 'eyeColor', 'hair.color', 'hair.type', 'crypto.coin', 'crypto.network'
+        ].includes(field)) {
+          inputProps.pattern = '^[a-zA-ZáéíóúÁÉÍÓÚüÜñÑ\\s]*$';
+          inputProps.title = 'Solo letras';
+        }
+        if (field === 'macAddress') {
+          inputProps.pattern = '^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$';
+          inputProps.title = 'MAC Address válida';
+        }
+        if (field === 'ip') {
+          inputProps.pattern = '^(\\d{1,3}\\.){3}\\d{1,3}$';
+          inputProps.title = 'IP válida';
+        }
+        if (field === 'bank.iban') {
+          inputProps.pattern = '^([A-Z]{2}\\d{2}[A-Z0-9]{1,30})$';
+          inputProps.title = 'IBAN válido';
+        }
+        if (field === 'bank.cardExpire') {
+          inputProps.pattern = '^(0[1-9]|1[0-2])/(\\d{2})$';
+          inputProps.title = 'Formato MM/YY';
+        }
+        if (field === 'bank.currency') {
+          inputProps.pattern = '^[A-Z]{3}$';
+          inputProps.title = 'Ejemplo: USD, EUR';
+        }
+        if (field === 'crypto.wallet') {
+          inputProps.minLength = 5;
+        }
+        if (field === 'userAgent') {
+          inputProps.minLength = 5;
+        }
         // Selects especiales
         if (field === 'gender') {
           return (
@@ -472,7 +638,7 @@ const Usuarios = () => {
           <div className="col-md-6" key={field+idx}>
             <div className="form-group">
               <label htmlFor={name}>{label}</label>
-              <input type={type} id={name} name={name} value={value || ''} onChange={handleInputChange} className="form-control" disabled={isViewMode} required />
+              <input type={type} id={name} name={name} value={value || ''} onChange={handleInputChange} className="form-control" disabled={isViewMode} {...inputProps} />
               {errors[name] && <div className="text-danger">{errors[name]}</div>}
             </div>
           </div>
@@ -481,42 +647,16 @@ const Usuarios = () => {
     </div>
   );
 
-  // 3. Renderiza los pasos del wizard con círculos clickeables y línea de progreso
+  // Reemplazar el renderizado de los pasos del wizard
   const renderStep = () => {
-    if (currentStep === 1) {
-      return (
-        <div className="wizard-step">
-          <h4 className="mb-4">Información Personal</h4>
-          {renderFields(wizardSteps[0].fields)}
-        </div>
-      );
-    }
-    if (currentStep === 2) {
-      return (
-        <div className="wizard-step">
-          <h4 className="mb-4">Información de Contacto</h4>
-          {renderFields(wizardSteps[1].fields)}
-        </div>
-      );
-    }
-    if (currentStep === 3) {
-      return (
-        <div className="wizard-step">
-          <h4 className="mb-4">Información Profesional</h4>
-          {renderFields(wizardSteps[2].fields)}
-        </div>
-      );
-    }
-    return null;
+    const step = wizardSteps[currentStep - 1];
+    return (
+      <div className="wizard-step">
+        <h4 className="mb-4">{step.label}</h4>
+        {renderFields(step.fields)}
+      </div>
+    );
   };
-
-  // 1. Generar lista de campos planos para tabla y exportaciones
-  const flatFields = [
-    'id', 'firstName', 'lastName', 'maidenName', 'age', 'gender', 'birthDate', 'image', 'height', 'weight', 'eyeColor', 'hair.color', 'hair.type', 'bloodGroup',
-    'email', 'phone', 'username', 'password', 'ip', 'macAddress', 'address.address', 'address.city', 'address.state', 'address.stateCode', 'address.postalCode', 'address.coordinates.lat', 'address.coordinates.lng', 'address.country',
-    'university', 'company.name', 'company.title', 'company.department', 'company.address.address', 'company.address.city', 'company.address.state', 'company.address.stateCode', 'company.address.postalCode', 'company.address.coordinates.lat', 'company.address.coordinates.lng', 'company.address.country',
-    'bank.cardExpire', 'bank.cardNumber', 'bank.cardType', 'bank.currency', 'bank.iban', 'ein', 'ssn', 'userAgent', 'crypto.coin', 'crypto.wallet', 'crypto.network', 'role', 'estado'
-  ];
 
   // Render
   return (
@@ -550,6 +690,32 @@ const Usuarios = () => {
                 <div className="tab-content mt-4">
                   {activeTab === 'register' && (
                     <div className="tab-pane fade show active">
+                      {/* Wizard Steps Visual */}
+                      {activeTab === 'register' && (
+                        <div className="wizard-progress mb-4">
+                          <div className="d-flex align-items-center justify-content-center">
+                            {[1,2,3,4,5,6].map((step) => (
+                              <React.Fragment key={step}>
+                                <button
+                                  type="button"
+                                  className={`wizard-circle btn btn-${currentStep === step ? 'success' : 'light'} mx-2 ${currentStep === step ? 'font-weight-bold' : ''}`}
+                                  style={{ borderRadius: '50%', width: 40, height: 40, border: currentStep === step ? '2px solid #7AB730' : '1px solid #ccc', color: currentStep === step ? '#fff' : '#7AB730', background: currentStep === step ? '#7AB730' : '#fff', transition: 'all 0.2s' }}
+                                  onClick={() => goToStep(step)}
+                                  disabled={currentStep === step}
+                                >
+                                  {step}
+                                </button>
+                                {step < 6 && (
+                                  <div style={{ width: 40, height: 4, background: currentStep > step ? '#7AB730' : '#ccc', borderRadius: 2 }}></div>
+                                )}
+                              </React.Fragment>
+                            ))}
+                          </div>
+                          <div className="d-flex justify-content-between mt-2 px-2" style={{fontSize: 13, color: '#7AB730'}}>
+                            {wizardSteps.map(s => <span key={s.label}>{s.label}</span>)}
+                          </div>
+                        </div>
+                      )}
                       {/* Formulario de registro/edición */}
                       <form onSubmit={handleSubmit} className="row g-3">
                         {isEditMode && (
@@ -564,10 +730,10 @@ const Usuarios = () => {
                           {currentStep > 1 && (
                             <button type="button" className="btn btn-secondary mr-2" onClick={prevStep}>Anterior</button>
                           )}
-                          {currentStep < 3 && (
-                            <button type="button" className="btn btn-primary" onClick={nextStep} disabled={!isCurrentStepValid()}>Siguiente</button>
+                          {currentStep < 6 && (
+                            <button type="button" className="btn btn-primary" onClick={nextStep} >Siguiente</button>
                           )}
-                          {currentStep === 3 && !isViewMode && (
+                          {currentStep === 6 && !isViewMode && (
                             <button type="submit" className="btn btn-success">{isEditMode ? 'Actualizar' : 'Registrar'}</button>
                           )}
                         </div>
