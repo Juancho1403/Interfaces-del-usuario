@@ -1,0 +1,289 @@
+/********** Template CSS Variables **********/
+:root {
+    --color-primary: #7AB730;
+    --color-secondary: #5f8f25;
+    --color-accent: #89b70d;
+    --color-text: #212121;
+    --color-background: #FFFFFF;
+    
+    --font-heading: 'Poppins', sans-serif;
+    --font-main: 'Poppins', sans-serif;
+    
+    --font-size-title: 40px;
+    --font-size-subtitle: 28px;
+    --font-size-paragraph: 16px;
+}
+
+/* Sobrescribir las variables de Bootstrap con nuestras variables dinámicas */
+:root {
+    --primary: var(--color-primary);
+    --secondary: var(--color-secondary);
+    --dark: var(--color-text);
+    --light: var(--color-background);
+}
+
+/* Aplicar las variables a elementos específicos */
+body {
+    background: var(--color-background);
+    font-family: var(--font-main);
+    color: var(--color-text);
+}
+
+a {
+    color: var(--color-primary);
+}
+
+a:hover {
+    color: var(--color-secondary);
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+}
+
+.btn-dark {
+    background-color: var(--color-text);
+    border-color: var(--color-text);
+}
+
+.btn:hover {
+    background-color: var(--color-accent);
+}
+
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-dark { color: var(--color-text) !important; }
+.text-white { color: var(--color-background) !important; }
+.text-body { color: var(--color-text) !important; }
+
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-light { background-color: var(--color-background) !important; }
+.bg-dark { background-color: var(--color-text) !important; }
+.bg-white { background-color: var(--color-background) !important; }
+
+h1, .h1, .display-3, .display-4 {
+    font-size: var(--font-size-title);
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+h2, .h2 {
+    font-size: var(--font-size-subtitle);
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    font-weight: 700;
+}
+
+h3, .h3, h4, .h4, h5, .h5 {
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    font-weight: 600;
+}
+
+h6, .h6 {
+    font-family: var(--font-heading);
+    color: var(--color-primary);
+    font-weight: 500;
+}
+
+p {
+    font-size: var(--font-size-paragraph);
+    color: var(--color-text);
+}
+
+.navbar-light .navbar-brand h1 {
+    color: var(--color-primary) !important;
+}
+
+.navbar-light .navbar-brand span {
+    color: var(--color-text) !important;
+}
+
+.navbar-light .navbar-nav .nav-link {
+    font-family: var(--font-heading);
+    color: var(--color-text);
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.navbar-light .navbar-nav .nav-link:hover,
+.navbar-light .navbar-nav .nav-link.active {
+    color: var(--color-primary);
+}
+
+.page-header {
+     background: linear-gradient(rgba(0, 0, 0, .5), rgba(0, 0, 0, .5)), url(./carousel-1.jpg) no-repeat center center;
+     background-size: cover;
+}
+
+.team-item .team-social a.btn {
+    background: var(--color-background);
+    color: var(--color-primary);
+}
+
+.team-item .team-social a.btn:hover {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.destination-item a.btn {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.service-item i {
+    color: var(--color-primary);
+}
+
+.package-item .btn {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.package-item .btn:hover {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.testimonial-carousel .owl-dot {
+    background: var(--color-primary) !important;
+}
+
+.testimonial-carousel .owl-dot.active {
+    background: var(--color-secondary) !important;
+}
+
+.blog-item .btn {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+}
+
+.blog-item .btn:hover {
+    background: var(--color-primary);
+    color: var(--color-background);
+}
+
+.contact-form .help-block ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.fa, .fab, .fas {
+    color: var(--color-primary);
+}
+
+.btn-link{
+    color: var(--color-primary);
+}
+
+.btn-link:hover{
+    color: var(--color-secondary);
+    background-color: transparent;
+}
+
+.page-link{
+    color: var(--color-primary);
+}
+
+.page-link:hover{
+    color: var(--color-secondary);
+}
+
+.page-item.active .page-link{
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-background);
+}
+
+.dropdown-item.active, .dropdown-item:active {
+    background-color: var(--color-primary);
+    color: var(--color-background);
+}
+
+.custom-control-input:checked~.custom-control-label::before {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+h6 {
+    color: var(--color-primary);
+}
+
+.booking {
+    position: relative;
+    width: 100%;
+    margin: -35px 0 30px 0;
+    background: var(--color-primary);
+    z-index: 1;
+}
+
+.about-text h6 {
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.team-item {
+    background: var(--color-background) !important;
+}
+
+.owl-carousel .owl-nav .owl-prev, .owl-carousel .owl-nav .owl-next {
+    background: var(--color-primary);
+}
+
+.owl-carousel .owl-nav .owl-prev:hover, .owl-carousel .owl-nav .owl-next:hover {
+    background: var(--color-secondary);
+}
+
+.blog-date {
+    background: var(--color-primary);
+}
+
+.footer {
+    color: #656565;
+}
+
+.footer a.text-white:hover {
+    color: var(--color-primary) !important;
+}
+
+.footer p, .footer a.text-white {
+    color: #fff !important;
+}
+
+.footer h3 {
+    color: var(--color-primary);
+}
+
+.footer .border-top {
+    border-top: 1px solid #3e3e3e !important;
+}
+
+.d-flex i {
+    color: var(--color-primary);
+}
+
+.d-flex i.text-white {
+    color: var(--color-background) !important;
+}
+
+.input-group-append .btn,
+.input-group-prepend .btn {
+    border-color: var(--color-primary);
+    background-color: var(--color-primary);
+    color: var(--color-background);
+}
+
+.input-group-append .btn:hover,
+.input-group-prepend .btn:hover {
+    background-color: var(--color-secondary);
+    border-color: var(--color-secondary);
+} 

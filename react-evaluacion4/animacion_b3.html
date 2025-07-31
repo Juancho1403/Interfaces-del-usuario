@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animación Tangram 3D: Cabra, Persona, Castillo</title>
+    <svg>
+        <defs>
+            <filter id="f1" x="0" y="0">
+                <feGaussianBlur in="SourceGraphic" stdDeviation="5" />
+            </filter>
+        </defs>
+    </svg>
+    <style>
+        body {
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a2e, #2a2a2a);
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            overflow: hidden;
+        }
+        #header {
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            padding: 10px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+        #figure-name {
+            font-size: 2.5em;
+            font-weight: bold;
+            background: linear-gradient(to right, #ff9966, #ff5e62);
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+            transition: opacity 0.5s ease;
+        }
+        #info-text {
+            font-size: 1rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        #container {
+            border-radius: 12px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            width: 80vw;
+            height: 70vh;
+            margin-top: 20px;
+        }
+    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div id="header">
+        <div id="figure-name">Cabra</div>
+        <div id="info-text">Arrastra el ratón para rotar la vista | Rueda para acercar/alejar</div>
+    </div>
+    
+    <div id="container"></div>
+
+    <!-- Librerías de terceros -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tween.js/18.6.4/tween.umd.js"></script>
+
+    <script>
+        // --- Configuración Global ---
+        let scene, camera, renderer, controls;
+        const pieces = [];
+        let currentFigureIndex = 0;
+        const figureNames = ['cabra', 'castillo', 'persona'];
+        const figureNameElement = document.getElementById('figure-name');
+        let isAnimating = true;
+
+        // --- Datos de las Figuras ---
+        const PIECES_DATA = [
+            { // 0: Triángulo Grande (Fucsia)
+                color: '#cd0e66',
+                vertices: [[-100, -50], [0, 50], [100, -50]],
+                states: [
+                    { p: { x: -67.2, y: -40.0 }, r: 111 },
+                    { p: { x: 66.5, y: -0.7 }, r: 180 },
+                    { p: { x: 41.6, y: 78.4 }, r: 225 }
+                ]
+            },
+            { // 1: Triángulo Grande (Azul)
+                color: '#0f82f2',
+                vertices: [[-100, -50], [0, 50], [100, -50]],
+                states: [
+                    { p: { x: 54.2, y: -8.3 }, r: 291 },
+                    { p: { x: -67.3, y: 70.7 }, r: 180 },
+                    { p: { x: -29.1, y: 7.7 }, r: 45 }
+                ]
+            },
+            { // 2: Triángulo Mediano (Morado)
+                color: '#6d3bbf',
+                vertices: [[-50, -50], [50, -50], [50, 50]],
+                states: [
+                    { p: { x: 75.6, y: -92.2 }, r: 246 },
+                    { p: { x: -32.7, y: -120.7 }, r: 315 },
+                    { p: { x: 0.0, y: -77.7 }, r: 269 }
+                ]
+            },
+            { // 3: Paralelogramo (Naranja)
+                color: '#fd8c00',
+                vertices: [[-75, 25], [25, 25], [75, -25], [-25, -25]],
+                states: [
+                    { p: { x: 29.0, y: 135.3 }, r: 21 },
+                    { p: { x: -68.0, y: -49.0 }, r: 315 },
+                    { p: { x: 25.0, y: -102.7 }, r: 270 }
+                ]
+            },
+            { // 4: Triángulo Pequeño (Rojo)
+                color: '#eb4726',
+                vertices: [[0, -25], [50, 25], [-50, 25]],
+                states: [
+                    { p: { x: -142.1, y: 10.2 }, r: 260 },
+                    { p: { x: 20.4, y: -67.7 }, r: 45 },
+                    { p: { x: 50.0, y: -152.7 }, r: 0 }
+                ]
+            },
+            { // 5: Triángulo Pequeño (Turquesa)
+                color: '#009ea6',
+                vertices: [[0, -25], [50, 25], [-50, 25]],
+                states: [
+                    { p: { x: 127.8, y: 44.0 }, r: 21 },
+                    { p: { x: -85.7, y: 3.0 }, r: 315 },
+                    { p: { x: -75.0, y: -134.4 }, r: 270 }
+                ]
+            },
+            { // 6: Cuadrado (Verde)
+                color: '#22ab24',
+                vertices: [[-50, 0], [0, -50], [50, 0], [0, 50]],
+                states: [
+                    { p: { x: 90.1, y: 85.1 }, r: 21 },
+                    { p: { x: 130.0, y: -88.4 }, r: 45 },
+                    { p: { x: 31.2, y: 149.1 }, r: 45 }
+                ]
+            }
+        ];
+
+        // --- Función de Inicialización ---
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a1a);
+
+            camera = new THREE.PerspectiveCamera(75, document.getElementById('container').clientWidth / document.getElementById('container').clientHeight, 0.1, 1000);
+            camera.position.set(0, 0, 300);
+            camera.lookAt(scene.position);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(document.getElementById('container').clientWidth, document.getElementById('container').clientHeight);
+            document.getElementById('container').appendChild(renderer.domElement);
+
+            // Iluminación
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            directionalLight.position.set(100, 100, 200);
+            scene.add(directionalLight);
+
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enablePan = false;
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+
+            createPieces();
+            animate();
+            setTimeout(startNextTransition, 2000);
+        }
+
+        // --- Creación de las Piezas ---
+        function createPieces() {
+            const extrusionSettings = {
+                steps: 1, depth: 15, bevelEnabled: true,
+                bevelThickness: 2, bevelSize: 1, bevelOffset: 0, bevelSegments: 2
+            };
+
+            PIECES_DATA.forEach(data => {
+                const shape = new THREE.Shape();
+                shape.moveTo(data.vertices[0][0], -data.vertices[0][1]);
+                for (let i = 1; i < data.vertices.length; i++) {
+                    shape.lineTo(data.vertices[i][0], -data.vertices[i][1]);
+                }
+
+                const geometry = new THREE.ExtrudeGeometry(shape, extrusionSettings);
+                geometry.center();
+
+                const material = new THREE.MeshStandardMaterial({ 
+                    color: data.color, 
+                    metalness: 0.1, 
+                    roughness: 0.6 
+                });
+                
+                const mesh = new THREE.Mesh(geometry, material);
+
+                const initialState = data.states[0];
+                mesh.position.set(initialState.p.x, initialState.p.y, 0);
+                mesh.rotation.z = THREE.MathUtils.degToRad(-initialState.r);
+
+                // Solo voltear el paralelogramo naranja (índice 3) en el estado donde r=270
+                if (pieces.length === 3 && initialState.r === 270) {
+                    mesh.scale.x = -1;
+                }
+
+                scene.add(mesh);
+                pieces.push(mesh);
+            });
+        }
+
+        // --- Lógica de Transición con efecto de elevación ---
+        function transitionToFigure(figureIndex) {
+            // Cambiar el nombre de la figura
+            figureNameElement.style.opacity = 0;
+            setTimeout(() => {
+                figureNameElement.textContent = figureNames[figureIndex];
+                figureNameElement.style.opacity = 1;
+            }, 500);
+
+            // Elevar todas las piezas
+            pieces.forEach(piece => {
+                new TWEEN.Tween(piece.position)
+                    .to({ z: 150 }, 600)
+                    .easing(TWEEN.Easing.Cubic.Out)
+                    .start();
+            });
+
+            // Luego mover cada pieza individualmente con retraso
+            setTimeout(() => {
+                pieces.forEach((piece, i) => {
+                    setTimeout(() => {
+                        const targetState = PIECES_DATA[i].states[figureIndex];
+                        const targetPosition = targetState.p;
+                        const targetRotation = THREE.MathUtils.degToRad(-targetState.r);
+
+                        // Animar movimiento y rotación
+                        new TWEEN.Tween(piece.position)
+                            .to({ 
+                                x: targetPosition.x, 
+                                y: targetPosition.y,
+                                z: 0  // Bajar mientras se mueve
+                            }, 1000)
+                            .easing(TWEEN.Easing.Back.Out)
+                            .start();
+
+                        new TWEEN.Tween(piece.rotation)
+                            .to({ z: targetRotation }, 1000)
+                            .easing(TWEEN.Easing.Circular.Out)
+                            .start();
+
+                        // Para el paralelogramo naranja
+                        if (i === 3) {
+                            const targetScaleX = (targetState.r === 270) ? -1 : 1;
+                            new TWEEN.Tween(piece.scale)
+                                .to({ x: targetScaleX }, 1000)
+                                .easing(TWEEN.Easing.Elastic.Out)
+                                .start();
+                        }
+
+                        // Si es la última pieza, programar la siguiente transición
+                        if (i === pieces.length - 1) {
+                            setTimeout(startNextTransition, 3000);
+                        }
+                    }, i * 300);  // Retraso entre piezas
+                });
+            }, 600);  // Esperar a que todas las piezas estén elevadas
+        }
+
+        function startNextTransition() {
+            currentFigureIndex = (currentFigureIndex + 1) % figureNames.length;
+            transitionToFigure(currentFigureIndex);
+        }
+
+        function animate(time) {
+            requestAnimationFrame(animate);
+            TWEEN.update(time);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        // Iniciar la aplicación
+        init();
+
+        // Manejo de redimensionamiento
+        window.addEventListener('resize', () => {
+            camera.aspect = document.getElementById('container').clientWidth / document.getElementById('container').clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(document.getElementById('container').clientWidth, document.getElementById('container').clientHeight);
+        });
+    </script>
+</body>
+</html>

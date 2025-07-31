@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@tweenjs/tween.js": "^25.0.0",
+    "bcryptjs": "^3.0.2",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.7.0",
+    "three": "^0.178.0"
+  }
+}
