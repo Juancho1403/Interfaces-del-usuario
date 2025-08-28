@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import Cropper from 'react-easy-crop';
+import 'react-easy-crop/react-easy-crop.css';
 import axios from 'axios';
 
 const MultimediaAdmin = () => {
@@ -27,18 +29,24 @@ const MultimediaAdmin = () => {
     file: null,
   });
 
-  // Estados para previews
+  // Estados para previews y cropper
   const [videoPreview, setVideoPreview] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [imageInfo, setImageInfo] = useState(null);
+  const [crop, setCrop] = useState({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
-  // Cargar datos al montar el componente
-  useEffect(() => {
-    fetchVideos();
-    fetchImages();
-  }, []);
 
-  // Funciones para conectar con el backend
-  const fetchVideos = async () => {
+
+  // Función para mostrar toasts (debe ir antes de fetchVideos/fetchImages)
+  const showToast = (message, type = 'success') => {
+    setToast({ show: true, message, type });
+    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+  };
+
+  // Funciones para conectar con el backend (usando useCallback para evitar advertencias de dependencias)
+  const fetchVideos = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:3001/api/videos', {
@@ -48,9 +56,9 @@ const MultimediaAdmin = () => {
     } catch (error) {
       showToast('Error al cargar videos', 'error');
     }
-  };
+  }, []);
 
-  const fetchImages = async () => {
+  const fetchImages = useCallback(async () => {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get('http://localhost:3001/api/imagenes', {
@@ -60,13 +68,17 @@ const MultimediaAdmin = () => {
     } catch (error) {
       showToast('Error al cargar imágenes', 'error');
     }
-  };
+  }, []);
 
-  // Función para mostrar toasts
-  const showToast = (message, type = 'success') => {
-    setToast({ show: true, message, type });
-    setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
-  };
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchVideos();
+    fetchImages();
+  }, [fetchVideos, fetchImages]);
+
+  // ...existing code...
+
+  // ...existing code...
 
   // Handlers para formularios con preview
   const handleVideoFormChange = (e) => {
@@ -101,11 +113,61 @@ const MultimediaAdmin = () => {
       if (file) {
         const url = URL.createObjectURL(file);
         setImagePreview(url);
+        // Obtener info de la imagen
+        const img = new window.Image();
+        img.src = url;
+        img.onload = function () {
+          setImageInfo({
+            name: file.name,
+            type: file.type,
+            // Convertir a MB y redondear a 2 decimales
+            size: Number((file.size / (1024 * 1024)).toFixed(2)),
+            width: img.width,
+            height: img.height
+          });
+        };
+      } else {
+        setImageInfo(null);
       }
     } else {
       setImageForm({ ...imageForm, [name]: value });
     }
   };
+
+  // Utilidad para obtener el blob recortado
+  const getCroppedImg = async (imageSrc, cropPixels, fileType) => {
+    const image = await createImage(imageSrc);
+    const canvas = document.createElement('canvas');
+    canvas.width = cropPixels.width;
+    canvas.height = cropPixels.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(
+      image,
+      cropPixels.x,
+      cropPixels.y,
+      cropPixels.width,
+      cropPixels.height,
+      0,
+      0,
+      cropPixels.width,
+      cropPixels.height
+    );
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, fileType || 'image/png');
+    });
+  };
+
+  function createImage(url) {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.addEventListener('load', () => resolve(img));
+      img.addEventListener('error', (error) => reject(error));
+      img.setAttribute('crossOrigin', 'anonymous');
+      img.src = url;
+    });
+  }
 
   // Funciones CRUD
   const handleSaveVideo = async (e) => {
@@ -163,12 +225,20 @@ const MultimediaAdmin = () => {
     e.preventDefault();
     setLoading(true);
     try {
+      let croppedBlob = null;
+      if (imagePreview && croppedAreaPixels) {
+        croppedBlob = await getCroppedImg(imagePreview, croppedAreaPixels, imageInfo?.type);
+      }
       const formData = new FormData();
-      formData.append('name', imageForm.name);
-      formData.append('format', imageForm.format);
-      formData.append('size', imageForm.size);
-      formData.append('dimensions', imageForm.dimensions);
-      formData.append('file', imageForm.file);
+      if (imageInfo) {
+        formData.append('name', imageInfo.name);
+        formData.append('format', imageInfo.type);
+        // size en MB, como número
+        formData.append('size', imageInfo.size);
+        formData.append('dimensions', imageInfo.width + 'x' + imageInfo.height);
+      }
+      // El backend espera un string (ruta/nombre), pero enviamos el archivo para futura compatibilidad
+      formData.append('file', croppedBlob || imageForm.file, imageInfo?.name);
 
       const token = localStorage.getItem('token');
       await axios.post('http://localhost:3001/api/imagenes', formData, {
@@ -177,10 +247,13 @@ const MultimediaAdmin = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
       showToast('Imagen guardada exitosamente');
       setImageForm({ name: '', format: '', size: '', dimensions: '', file: null });
       setImagePreview(null);
+      setImageInfo(null);
+      setCrop({ x: 0, y: 0 });
+      setZoom(1);
+      setCroppedAreaPixels(null);
       fetchImages();
     } catch (error) {
       showToast(error.response?.data?.error || 'Error al guardar imagen', 'error');
@@ -198,23 +271,29 @@ const MultimediaAdmin = () => {
     return (
       <div id="mediaCarousel" className="carousel slide mb-4" data-bs-ride="carousel">
         <div className="carousel-inner">
-          {items.map((item, idx) => (
-            <div className={`carousel-item${idx === carouselIndex ? ' active' : ''}`} key={idx}>
-              {activeMenu === 'images' ? (
-                <img src={item.file} className="d-block mx-auto rounded" alt={item.name} style={{ maxHeight: 320, maxWidth: '100%', objectFit: 'cover' }} />
-              ) : (
-                <video controls className="d-block mx-auto rounded bg-dark" style={{ maxHeight: 320, maxWidth: '100%' }}>
-                  <source src={item.file} type={item.format || 'video/mp4'} />
-                  {item.subtitles && item.subtitles.map((sub, idx2) => (
-                    <track key={idx2} label={sub.lang} kind="subtitles" srcLang={sub.lang} src={sub.file} default={idx2 === 0} />
-                  ))}
-                </video>
-              )}
-              <div className="carousel-caption d-none d-md-block">
-                <h5>{item.name}</h5>
+          {items.map((item, idx) => {
+            let imageUrl = item.file;
+            if (activeMenu === 'images' && imageUrl && imageUrl.startsWith('/uploads/')) {
+              imageUrl = `http://localhost:3001${imageUrl}`;
+            }
+            return (
+              <div className={`carousel-item${idx === carouselIndex ? ' active' : ''}`} key={idx}>
+                {activeMenu === 'images' ? (
+                  <img src={imageUrl} className="d-block mx-auto rounded" alt={item.name} style={{ maxHeight: 320, maxWidth: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <video controls className="d-block mx-auto rounded bg-dark" style={{ maxHeight: 320, maxWidth: '100%' }}>
+                    <source src={item.file} type={item.format || 'video/mp4'} />
+                    {item.subtitles && item.subtitles.map((sub, idx2) => (
+                      <track key={idx2} label={sub.lang} kind="subtitles" srcLang={sub.lang} src={sub.file} default={idx2 === 0} />
+                    ))}
+                  </video>
+                )}
+                <div className="carousel-caption d-none d-md-block">
+                  <h5>{item.name}</h5>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <button className="carousel-control-prev" type="button" onClick={() => setCarouselIndex((carouselIndex - 1 + items.length) % items.length)}>
           <span className="carousel-control-prev-icon" aria-hidden="true"></span>
@@ -392,23 +471,7 @@ const MultimediaAdmin = () => {
               <h4 className="mb-4 text-success">Agregar Imagen</h4>
               <form onSubmit={handleSaveImage}>
                 <div className="row g-3">
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold">Nombre</label>
-                    <input className="form-control" name="name" value={imageForm.name} onChange={handleImageFormChange} placeholder="Ingrese el nombre de la imagen" required />
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label fw-bold">Formato</label>
-                    <input className="form-control" name="format" value={imageForm.format} onChange={handleImageFormChange} placeholder="jpg, png, etc." required />
-                  </div>
-                  <div className="col-md-3">
-                    <label className="form-label fw-bold">Tamaño (MB)</label>
-                    <input className="form-control" name="size" value={imageForm.size} onChange={handleImageFormChange} type="number" placeholder="2" required />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-bold">Dimensiones (ej: 1000x1000)</label>
-                    <input className="form-control" name="dimensions" value={imageForm.dimensions} onChange={handleImageFormChange} placeholder="1920x1080" required />
-                  </div>
-                  <div className="col-md-6">
+                  <div className="col-md-12">
                     <label className="form-label fw-bold">Archivo de imagen</label>
                     <div className="file-input-group">
                       <button type="button" className="btn file-btn w-100">🖼️ Seleccionar imagen</button>
@@ -421,11 +484,33 @@ const MultimediaAdmin = () => {
                 </button>
               </form>
 
-              {/* Preview de imagen */}
+              {/* Preview y cropper de imagen */}
               {imagePreview && (
                 <div className="preview-container mt-4">
-                  <h6 className="fw-bold">🖼️ Preview de la imagen:</h6>
-                  <img src={imagePreview} alt="Preview" className="preview-image" />
+                  <h6 className="fw-bold">🖼️ Preview y recorte de la imagen:</h6>
+                  <div style={{ position: 'relative', width: '100%', height: 300, background: '#222' }}>
+                    <Cropper
+                      image={imagePreview}
+                      crop={crop}
+                      zoom={zoom}
+                      aspect={undefined}
+                      onCropChange={setCrop}
+                      onZoomChange={setZoom}
+                      onCropComplete={(_, croppedAreaPixels) => setCroppedAreaPixels(croppedAreaPixels)}
+                    />
+                  </div>
+                  <div className="mt-2">
+                    <label>Zoom:</label>
+                    <input type="range" min={1} max={3} step={0.01} value={zoom} onChange={e => setZoom(Number(e.target.value))} style={{ width: 200 }} />
+                  </div>
+                  {imageInfo && (
+                    <div className="mt-3 datos-recorte">
+                      <strong>Nombre:</strong> {imageInfo.name}<br/>
+                      <strong>Tipo:</strong> {imageInfo.type}<br/>
+                      <strong>Tamaño:</strong> {imageInfo.size}<br/>
+                      <strong>Dimensiones:</strong> {imageInfo.width} x {imageInfo.height} px
+                    </div>
+                  )}
                 </div>
               )}
             </>

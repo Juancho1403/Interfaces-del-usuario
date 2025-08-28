@@ -5,13 +5,24 @@ import './SplashAnimacion3D.css';
 const figureNames = ['cabra', 'castillo', 'persona'];
 const coloresFigurasSplash = JSON.parse(localStorage.getItem('coloresFigurasSplash'));
 const PIECES_DATA = [
-  { color: coloresFigurasSplash?.[0] || '#cd0e66', vertices: [[-100, -50], [0, 50], [100, -50]], states: [ { p: { x: -67.2, y: -40.0 }, r: 111 }, { p: { x: 66.5, y: -0.7 }, r: 180 }, { p: { x: 41.6, y: 78.4 }, r: 225 } ] },
-  { color: coloresFigurasSplash?.[1] || '#0f82f2', vertices: [[-100, -50], [0, 50], [100, -50]], states: [ { p: { x: 54.2, y: -8.3 }, r: 291 }, { p: { x: -67.3, y: 70.7 }, r: 180 }, { p: { x: -29.1, y: 7.7 }, r: 45 } ] },
-  { color: coloresFigurasSplash?.[2] || '#6d3bbf', vertices: [[-50, -50], [50, -50], [50, 50]], states: [ { p: { x: 75.6, y: -92.2 }, r: 246 }, { p: { x: -32.7, y: -120.7 }, r: 315 }, { p: { x: 0.0, y: -77.7 }, r: 269 } ] },
-  { color: coloresFigurasSplash?.[3] || '#fd8c00', vertices: [[-75, 25], [25, 25], [75, -25], [-25, -25]], states: [ { p: { x: 29.0, y: 135.3 }, r: 21 }, { p: { x: -68.0, y: -49.0 }, r: 315 }, { p: { x: 25.0, y: -102.7 }, r: 270 } ] },
-  { color: coloresFigurasSplash?.[4] || '#eb4726', vertices: [[0, -25], [50, 25], [-50, 25]], states: [ { p: { x: -142.1, y: 10.2 }, r: 260 }, { p: { x: 20.4, y: -67.7 }, r: 45 }, { p: { x: 50.0, y: -152.7 }, r: 0 } ] },
-  { color: coloresFigurasSplash?.[5] || '#009ea6', vertices: [[0, -25], [50, 25], [-50, 25]], states: [ { p: { x: 127.8, y: 44.0 }, r: 21 }, { p: { x: -85.7, y: 3.0 }, r: 315 }, { p: { x: -75.0, y: -134.4 }, r: 270 } ] },
-  { color: coloresFigurasSplash?.[6] || '#22ab24', vertices: [[-50, 0], [0, -50], [50, 0], [0, 50]], states: [ { p: { x: 90.1, y: 85.1 }, r: 21 }, { p: { x: 130.0, y: -88.4 }, r: 45 }, { p: { x: 31.2, y: 149.1 }, r: 45 } ] },
+  { vertices: [[-100, -50], [0, 50], [100, -50]], states: [ { p: { x: -67.2, y: -40.0 }, r: 111 }, { p: { x: 66.5, y: -0.7 }, r: 180 }, { p: { x: 41.6, y: 78.4 }, r: 225 } ] },
+  { vertices: [[-100, -50], [0, 50], [100, -50]], states: [ { p: { x: 54.2, y: -8.3 }, r: 291 }, { p: { x: -67.3, y: 70.7 }, r: 180 }, { p: { x: -29.1, y: 7.7 }, r: 45 } ] },
+  { vertices: [[-50, -50], [50, -50], [50, 50]], states: [ { p: { x: 75.6, y: -92.2 }, r: 246 }, { p: { x: -32.7, y: -120.7 }, r: 315 }, { p: { x: 0.0, y: -77.7 }, r: 269 } ] },
+  { vertices: [[-75, 25], [25, 25], [75, -25], [-25, -25]], states: [ { p: { x: 29.0, y: 135.3 }, r: 21 }, { p: { x: -68.0, y: -49.0 }, r: 315 }, { p: { x: 25.0, y: -102.7 }, r: 270 } ] },
+  { vertices: [[0, -25], [50, 25], [-50, 25]], states: [ { p: { x: -142.1, y: 10.2 }, r: 260 }, { p: { x: 20.4, y: -67.7 }, r: 45 }, { p: { x: 50.0, y: -152.7 }, r: 0 } ] },
+  { vertices: [[0, -25], [50, 25], [-50, 25]], states: [ { p: { x: 127.8, y: 44.0 }, r: 21 }, { p: { x: -85.7, y: 3.0 }, r: 315 }, { p: { x: -75.0, y: -134.4 }, r: 270 } ] },
+  { vertices: [[-50, 0], [0, -50], [50, 0], [0, 50]], states: [ { p: { x: 90.1, y: 85.1 }, r: 21 }, { p: { x: 130.0, y: -88.4 }, r: 45 }, { p: { x: 31.2, y: 149.1 }, r: 45 } ] },
+];
+
+// Definir los colores como variables CSS
+const colores = [
+  coloresFigurasSplash?.[0] || '#cd0e66',
+  coloresFigurasSplash?.[1] || '#0f82f2',
+  coloresFigurasSplash?.[2] || '#6d3bbf',
+  coloresFigurasSplash?.[3] || '#fd8c00',
+  coloresFigurasSplash?.[4] || '#eb4726',
+  coloresFigurasSplash?.[5] || '#009ea6',
+  coloresFigurasSplash?.[6] || '#22ab24',
 ];
 
 export default function SplashAnimacion3D({ onFinish }) {
@@ -142,7 +153,10 @@ export default function SplashAnimacion3D({ onFinish }) {
           width="100%" 
           height="100%" 
           viewBox="-200 -200 400 400"
-          style={{ background: '#1a1a1a' }}
+          style={{ 
+            background: '#1a1a1a',
+            ...Object.fromEntries(colores.map((color, i) => [`--color${i+1}`, color]))
+          }}
         >
           <defs>
             <filter id="glow">
@@ -157,13 +171,13 @@ export default function SplashAnimacion3D({ onFinish }) {
           {PIECES_DATA.map((data, idx) => {
             const piece = piecePositions[idx];
             const path = verticesToPath(data.vertices);
-            
+            const colorVar = `var(--color${idx+1})`;
             return (
               <g key={idx}>
                 {/* Glow effect */}
                 <path
                   d={path}
-                  fill={data.color}
+                  fill={colorVar}
                   opacity="0.3"
                   filter="url(#glow)"
                   transform={`
@@ -175,7 +189,7 @@ export default function SplashAnimacion3D({ onFinish }) {
                 {/* Main shape */}
                 <path
                   d={path}
-                  fill={data.color}
+                  fill={colorVar}
                   stroke="#ffffff"
                   strokeWidth="2"
                   transform={`
@@ -184,7 +198,7 @@ export default function SplashAnimacion3D({ onFinish }) {
                     scale(${piece.scaleX} 1)
                   `}
                   style={{
-                    filter: `drop-shadow(0 0 10px ${data.color})`,
+                    filter: `drop-shadow(0 0 10px ${colores[idx]})`,
                     transition: 'transform 0.1s ease-out'
                   }}
                 />

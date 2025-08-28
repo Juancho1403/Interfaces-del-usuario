@@ -13,7 +13,7 @@ exports.getImagenes = async (req, res) => {
 // Crear una imagen
 exports.createImagen = async (req, res) => {
   try {
-    const { name, format, size, dimensions, file } = req.body;
+    const { name, format, size, dimensions } = req.body;
     // Validaciones
     if (Number(size) > 4) {
       return res.status(400).json({ error: 'El tamaño máximo es 4MB' });
@@ -22,7 +22,13 @@ exports.createImagen = async (req, res) => {
     if (w < 1000 || h < 1000) {
       return res.status(400).json({ error: 'Las dimensiones mínimas son 1000x1000px' });
     }
-    const imagen = new Imagen({ name, format, size, dimensions, file });
+    // Guardar la ruta del archivo subido
+    let filePath = '';
+    if (req.file) {
+      // Guardar solo la ruta relativa para servirla luego
+      filePath = '/uploads/' + req.file.filename;
+    }
+    const imagen = new Imagen({ name, format, size, dimensions, file: filePath });
     await imagen.save();
     res.status(201).json(imagen);
   } catch (err) {
