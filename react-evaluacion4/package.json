@@ -4,6 +4,8 @@
     "bcryptjs": "^3.0.2",
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.7.0",
+    "react-slick": "^0.31.0",
+    "slick-carousel": "^1.8.1",
     "three": "^0.178.0"
   }
 }

@@ -10,6 +10,7 @@ import {
   deleteTipografiaTamanio
 } from '../api';
 import Home from './Home';
+import { useCarousel } from '../context/CarouselContext';
 
 const COLORES_ORIGINALES = {
   nombre_paleta: '',
@@ -41,6 +42,7 @@ const Configuraciones = () => {
   const [coloresFiguras, setColoresFiguras] = useState(
     JSON.parse(localStorage.getItem('coloresFigurasSplash')) || COLORES_FIGURAS_ORIGINALES
   );
+  const { carouselImages, addCarouselImage, removeCarouselImage } = useCarousel();
 
   // Definir fetchPaletas y fetchConfigs con useCallback ANTES del useEffect principal
   const fetchPaletas = useCallback(async () => {
@@ -133,6 +135,12 @@ const Configuraciones = () => {
 
   const revertirColoresOriginales = () => {
     setColorForm({ ...COLORES_ORIGINALES });
+  };
+
+  const handleRemoveCarouselImage = (imageId) => {
+    if (window.confirm('¿Estás seguro de que quieres eliminar esta imagen del carrusel?')) {
+      removeCarouselImage(imageId);
+    }
   };
 
   // Guardar y aplicar colores globalmente y en la vista previa

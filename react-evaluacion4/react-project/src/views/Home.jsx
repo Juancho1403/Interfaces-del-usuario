@@ -31,6 +31,7 @@ import package6 from '../assets/package-6.jpg';
 import { getAboutData } from '../api';
 import { useNavigate } from 'react-router-dom';
 import SplashAnimacion3D from './SplashAnimacion3D';
+import { useCarousel } from '../context/CarouselContext';
 // import ConnectionTest from '../components/ConnectionTest';
 
 const destinations = [
@@ -86,6 +87,7 @@ const Home = (props) => {
   const [isLoading, setIsLoading] = useState(true);
   const [showWelcome, setShowWelcome] = useState(true);
   const [showSplash, setShowSplash] = useState(true);
+  const { carouselImages, carouselVideos, removeCarouselImage, removeCarouselVideo } = useCarousel();
 
   useEffect(() => {
     if (!localStorage.getItem('splashShown')) {
@@ -179,36 +181,129 @@ const Home = (props) => {
 
           {/* Carousel Start */}
           <div className="container-fluid p-0">
+            <style>{`
+              .simple-carousel .carousel-indicators [data-bs-target] { width: 10px; height: 10px; border-radius: 50%; }
+              .simple-carousel .carousel-indicators .active { background-color: #00b894; }
+              /* Controles personalizados */
+              .simple-carousel .carousel-control-prev, 
+              .simple-carousel .carousel-control-next { width: 64px; opacity: 1; transition: transform .2s ease; }
+              .simple-carousel .carousel-control-prev:hover, 
+              .simple-carousel .carousel-control-next:hover { transform: scale(1.05); }
+              .simple-carousel .carousel-control-prev-icon, 
+              .simple-carousel .carousel-control-next-icon {
+                width: 44px; height: 44px; border-radius: 50%; background-color: rgba(0,0,0,0.5); box-shadow: 0 8px 16px rgba(0,0,0,0.2), 0 0 0 2px rgba(0,184,148,0.8);
+                background-size: 60% 60%; background-position: center; background-repeat: no-repeat; 
+              }
+              .simple-carousel .carousel-control-prev-icon { 
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' stroke='%23ffffff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M10.5 2.5 4 8l6.5 5.5'/%3e%3c/svg%3e");
+              }
+              .simple-carousel .carousel-control-next-icon { 
+                background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' stroke='%23ffffff' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'%3e%3cpath d='M5.5 2.5 12 8l-6.5 5.5'/%3e%3c/svg%3e");
+              }
+              .simple-carousel .carousel-control-prev-icon:hover, 
+              .simple-carousel .carousel-control-next-icon:hover { background-color: rgba(0,184,148,0.9); box-shadow: 0 10px 18px rgba(0,184,148,0.35); }
+              .card-carousel { background:#ffffff; border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,0.08); overflow:hidden; }
+              .card-carousel .caption { background: linear-gradient(90deg, #00b894, #0984e3); -webkit-background-clip:text; color:transparent; font-weight:700; }
+              .overlay-action { position:absolute; top:12px; right:12px; }
+            `}</style>
             <Carousel 
               id="header-carousel" 
+              className="simple-carousel"
               interval={5000}
               controls={true}
               indicators={true}
               fade={true}
             >
-              <Carousel.Item>
-                <img className="w-100" src={carousel1} alt="Image" />
-                <Carousel.Caption className="d-flex flex-column align-items-center justify-content-center">
-                  <div className="p-3" style={{ maxWidth: 900 }}>
-                    <h4 className="text-white text-uppercase mb-md-3">Tours & Travel</h4>
-                    <h1 className="display-3 text-white mb-md-4">Let's Discover The World Together</h1>
-                    <a href="#" className="btn btn-primary py-md-3 px-md-5 mt-2">Book Now</a>
-                  </div>
-                </Carousel.Caption>
-              </Carousel.Item>
-              <Carousel.Item>
-                <img className="w-100" src={carousel2} alt="Image" />
-                <Carousel.Caption className="d-flex flex-column align-items-center justify-content-center">
-                  <div className="p-3" style={{ maxWidth: 900 }}>
-                    <h4 className="text-white text-uppercase mb-md-3">Tours & Travel</h4>
-                    <h1 className="display-3 text-white mb-md-4">Discover Amazing Places With Us</h1>
-                    <a href="#" className="btn btn-primary py-md-3 px-md-5 mt-2">Book Now</a>
-                  </div>
-                </Carousel.Caption>
-              </Carousel.Item>
+              {carouselImages.map((image, index) => (
+                <Carousel.Item key={image.id}>
+                  <img className="w-100" src={image.src} alt={image.name} />
+                  <Carousel.Caption className="d-flex flex-column align-items-center justify-content-center">
+                    <div className="p-3" style={{ maxWidth: 900 }}>
+                      <h4 className="text-white text-uppercase mb-md-3">Tours & Travel</h4>
+                      <h1 className="display-3 text-white mb-md-4">
+                        {index === 0 ? "Let's Discover The World Together" : "Discover Amazing Places With Us"}
+                      </h1>
+                      <a href="#" className="btn btn-primary py-md-3 px-md-5 mt-2">Book Now</a>
+                    </div>
+                  </Carousel.Caption>
+                </Carousel.Item>
+              ))}
             </Carousel>
           </div>
           {/* Carousel End */}
+
+          {/* Video Carousel Start (simple) */}
+          {carouselVideos.length > 0 && (
+            <div className="container-fluid py-5">
+              <div className="container">
+                <div className="text-center mb-4">
+                  <h2 className="text-primary">Videos</h2>
+                  <p className="text-muted">Nuestros videos más recientes</p>
+                </div>
+                <Carousel interval={6000} controls indicators className="simple-carousel card-carousel">
+                  {carouselVideos.map((video) => (
+                    <Carousel.Item key={video.id}>
+                      <div className="row justify-content-center">
+                        <div className="col-lg-10 position-relative">
+                          <button
+                            className="btn btn-sm btn-danger position-absolute"
+                            style={{ top: 12, right: 12, opacity: 0.9 }}
+                            onClick={() => removeCarouselVideo(video.id)}
+                            title="Eliminar del carrusel"
+                          >
+                            <i className="bi bi-x"></i>
+                          </button>
+                          <video className="w-100 rounded shadow" controls style={{ border: '4px solid #00b894' }}>
+                            <source src={video.src} type={video.info?.type || 'video/mp4'} />
+                            Tu navegador no soporta el elemento de video.
+                          </video>
+                          <div className="text-center mt-3">
+                            <h5 className="caption">{video.name}</h5>
+                          </div>
+                        </div>
+                      </div>
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              </div>
+            </div>
+          )}
+          {/* Video Carousel End */}
+
+          {/* Image Carousel Start (simple adicional bajo el header) */}
+          {carouselImages.length > 0 && (
+            <div className="container-fluid py-5">
+              <div className="container">
+                <div className="text-center mb-4">
+                  <h2 className="text-success">Imágenes</h2>
+                  <p className="text-muted">Nuestras imágenes destacadas</p>
+                </div>
+                <Carousel interval={5000} controls indicators className="simple-carousel card-carousel">
+                  {carouselImages.map((image) => (
+                    <Carousel.Item key={image.id}>
+                      <div className="position-relative">
+                        {!image.isDefault && (
+                          <button
+                            className="btn btn-sm btn-danger position-absolute"
+                            style={{ top: 12, right: 12, opacity: 0.9 }}
+                            onClick={() => removeCarouselImage(image.id)}
+                            title="Eliminar del carrusel"
+                          >
+                            <i className="bi bi-x"></i>
+                          </button>
+                        )}
+                        <img className="d-block w-100 rounded shadow" src={image.src} alt={image.name} style={{ border: '4px solid #0984e3' }} />
+                      </div>
+                      <Carousel.Caption>
+                        <h5 className="caption">{image.name}</h5>
+                      </Carousel.Caption>
+                    </Carousel.Item>
+                  ))}
+                </Carousel>
+              </div>
+            </div>
+          )}
+          {/* Image Carousel End */}
 
           {/* Booking Start */}
           <div className="container-fluid booking mt-5 pb-5">

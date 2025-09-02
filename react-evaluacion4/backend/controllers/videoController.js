@@ -4,7 +4,13 @@ const Video = require('../models/videoModel');
 exports.getVideos = async (req, res) => {
   try {
     const videos = await Video.find();
-    res.json(videos);
+    // Parsear los campos JSON
+    const parsedVideos = videos.map(video => ({
+      ...video,
+      audioTracks: JSON.parse(video.audioTracks),
+      subtitles: JSON.parse(video.subtitles)
+    }));
+    res.json(parsedVideos);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener videos' });
   }
@@ -31,8 +37,7 @@ exports.createVideo = async (req, res) => {
     if (!subtitles.every(s => Number(s.duration) === Number(duration))) {
       return res.status(400).json({ error: 'Todos los subtítulos deben tener la misma duración que el video' });
     }
-    const video = new Video({ name, format, duration, size, file, audioTracks, subtitles });
-    await video.save();
+    const video = await Video.save({ name, format, duration, size, file, audioTracks, subtitles });
     res.status(201).json(video);
   } catch (err) {
     res.status(500).json({ error: 'Error al crear video', details: err.message });
@@ -59,7 +64,10 @@ exports.updateVideo = async (req, res) => {
     if (subtitles && !subtitles.every(s => Number(s.duration) === Number(duration))) {
       return res.status(400).json({ error: 'Todos los subtítulos deben tener la misma duración que el video' });
     }
-    const video = await Video.findByIdAndUpdate(id, { name, format, duration, size, file, audioTracks, subtitles }, { new: true });
+    const video = await Video.findByIdAndUpdate(id, { name, format, duration, size, file, audioTracks, subtitles });
+    if (!video) {
+      return res.status(404).json({ error: 'Video no encontrado' });
+    }
     res.json(video);
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar video', details: err.message });
@@ -70,7 +78,10 @@ exports.updateVideo = async (req, res) => {
 exports.deleteVideo = async (req, res) => {
   try {
     const { id } = req.params;
-    await Video.findByIdAndDelete(id);
+    const deleted = await Video.findByIdAndDelete(id);
+    if (!deleted) {
+      return res.status(404).json({ error: 'Video no encontrado' });
+    }
     res.json({ message: 'Video eliminado' });
   } catch (err) {
     res.status(500).json({ error: 'Error al eliminar video' });

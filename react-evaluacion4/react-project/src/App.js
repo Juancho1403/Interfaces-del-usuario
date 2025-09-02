@@ -3,6 +3,7 @@ import { useNavigate, Routes, Route, useLocation, Navigate } from 'react-router-
 import './App.css';
 import './assets/style.css';
 import './assets/theme.css';
+import { CarouselProvider } from './context/CarouselContext';
 import Home from './views/Home';
 import Login from './views/Login';
 import Register from './views/Register';
@@ -87,78 +88,80 @@ function App() {
   }, [showSplash]);
 
   return (
-    <div>
-      {showSplash ? (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          zIndex: 9999,
-          background: 'linear-gradient(135deg, #1a1a2e, #2a2a2a)',
-          transition: 'opacity 1.2s',
-        }}>
-          <iframe
-            src="/privado/animacion_b3.html"
-            title="Animación Tangram 3D"
-            style={{
-              width: '100vw',
-              height: '100vh',
-              border: 'none',
-              display: 'block',
-              background: 'transparent',
-            }}
-            allowFullScreen
-          />
-        </div>
-      ) : (
-        <>
-          {!shouldHideHeader && (
-            <>
-              <Topbar />
-              <Navbar isLoggedIn={!!token} onLogout={logout} />
-            </>
-          )}
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/home" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/completar-perfil" element={
-              <ProtectedRoute>
-                <CompleteProfile />
-              </ProtectedRoute>
-            } />
-            <Route path="/perfil" element={
-              <ProtectedRoute>
-                <Profile />
-              </ProtectedRoute>
-            } />
-            <Route path="/configuraciones" element={
-              <AdminRoute>
-                <Configuraciones />
-              </AdminRoute>
-            } />
-            <Route path="/usuarios-admin" element={
-              <AdminRoute>
-                <UsuariosAdmin />
-              </AdminRoute>
-            } />
-            <Route path="/usuarios" element={<UsuariosProtected />} />
-            <Route path="/multimedia" element={
-              localStorage.getItem('role') === 'admin' ? <MultimediaAdmin /> : <Navigate to="/" />
-            } />
-            <Route path="/service" element={<Service />} />
-            <Route path="/single" element={<Single />} />
-            <Route path="/testimonial" element={<Testimonial />} />
-            <Route path="/destination" element={<Destination />} />
-            <Route path="/guide" element={<Guide />} />
-            <Route path="/package" element={<Package />} />
-            <Route path="/blog" element={<Blog />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/contact" element={<Contact />} />
-          </Routes>
-        </>
-      )}
-    </div>
+    <CarouselProvider>
+      <div>
+        {showSplash ? (
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'linear-gradient(135deg, #1a1a2e, #2a2a2a)',
+            transition: 'opacity 1.2s',
+          }}>
+            <iframe
+              src="/privado/animacion_b3.html"
+              title="Animación Tangram 3D"
+              style={{
+                width: '100vw',
+                height: '100vh',
+                border: 'none',
+                display: 'block',
+                background: 'transparent',
+              }}
+              allowFullScreen
+            />
+          </div>
+        ) : (
+          <>
+            {!shouldHideHeader && (
+              <>
+                <Topbar />
+                <Navbar isLoggedIn={!!token} onLogout={logout} />
+              </>
+            )}
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/completar-perfil" element={
+                <ProtectedRoute>
+                  <CompleteProfile />
+                </ProtectedRoute>
+              } />
+              <Route path="/perfil" element={
+                <ProtectedRoute>
+                  <Profile />
+                </ProtectedRoute>
+              } />
+              <Route path="/configuraciones" element={
+                <AdminRoute>
+                  <Configuraciones />
+                </AdminRoute>
+              } />
+              <Route path="/usuarios-admin" element={
+                <AdminRoute>
+                  <UsuariosAdmin />
+                </AdminRoute>
+              } />
+              <Route path="/usuarios" element={<UsuariosProtected />} />
+              <Route path="/multimedia" element={
+                localStorage.getItem('role') === 'admin' ? <MultimediaAdmin /> : <Navigate to="/" />
+              } />
+              <Route path="/service" element={<Service />} />
+              <Route path="/single" element={<Single />} />
+              <Route path="/testimonial" element={<Testimonial />} />
+              <Route path="/destination" element={<Destination />} />
+              <Route path="/guide" element={<Guide />} />
+              <Route path="/package" element={<Package />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+            </Routes>
+          </>
+        )}
+      </div>
+    </CarouselProvider>
   );
 }
 

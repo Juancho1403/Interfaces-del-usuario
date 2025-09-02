@@ -3,14 +3,10 @@ const cors = require('cors');
 
 const app = express();
 
-
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-// Servir archivos estáticos de uploads
-const path = require('path');
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Log global de todas las peticiones
 app.use((req, res, next) => {

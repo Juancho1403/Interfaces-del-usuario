@@ -1,32 +1,67 @@
-const mongoose = require('mongoose');
+const db = require('../config/db');
 
-const audioTrackSchema = new mongoose.Schema({
-  lang: { type: String, required: true },
-  file: { type: String, required: true }, // Ruta o nombre del archivo
-  duration: { type: Number, required: true }, // En segundos
-});
+class Video {
+  static async find() {
+    try {
+      const [rows] = await db.execute('SELECT * FROM videos ORDER BY createdAt DESC');
+      return rows;
+    } catch (error) {
+      throw error;
+    }
+  }
 
-const subtitleSchema = new mongoose.Schema({
-  lang: { type: String, required: true },
-  file: { type: String, required: true }, // Ruta o nombre del archivo .vtt
-  duration: { type: Number, required: true }, // En segundos
-});
+  static async findById(id) {
+    try {
+      const [rows] = await db.execute('SELECT * FROM videos WHERE id = ?', [id]);
+      return rows[0];
+    } catch (error) {
+      throw error;
+    }
+  }
 
-const videoSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  format: { type: String, required: true },
-  duration: { type: Number, required: true }, // En segundos
-  size: { type: Number, required: true }, // En MB
-  file: { type: String, required: true }, // Ruta o nombre del archivo de video
-  audioTracks: {
-    type: [audioTrackSchema],
-    validate: [arr => arr.length >= 2, 'Debe tener al menos 2 pistas de audio']
-  },
-  subtitles: {
-    type: [subtitleSchema],
-    validate: [arr => arr.length >= 2, 'Debe tener al menos 2 subtítulos']
-  },
-  createdAt: { type: Date, default: Date.now }
-});
+  static async save(videoData) {
+    try {
+      const { name, format, duration, size, file, audioTracks, subtitles } = videoData;
+      
+      // Insertar el video principal
+      const [result] = await db.execute(
+        'INSERT INTO videos (name, format, duration, size, file, audioTracks, subtitles, createdAt) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())',
+        [name, format, duration, size, file, JSON.stringify(audioTracks), JSON.stringify(subtitles)]
+      );
+      
+      return { id: result.insertId, ...videoData };
+    } catch (error) {
+      throw error;
+    }
+  }
 
-module.exports = mongoose.model('Video', videoSchema);
+  static async findByIdAndUpdate(id, updateData, options = {}) {
+    try {
+      const { name, format, duration, size, file, audioTracks, subtitles } = updateData;
+      
+      const [result] = await db.execute(
+        'UPDATE videos SET name = ?, format = ?, duration = ?, size = ?, file = ?, audioTracks = ?, subtitles = ? WHERE id = ?',
+        [name, format, duration, size, file, JSON.stringify(audioTracks), JSON.stringify(subtitles), id]
+      );
+      
+      if (result.affectedRows === 0) {
+        return null;
+      }
+      
+      return { id, ...updateData };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  static async findByIdAndDelete(id) {
+    try {
+      const [result] = await db.execute('DELETE FROM videos WHERE id = ?', [id]);
+      return result.affectedRows > 0;
+    } catch (error) {
+      throw error;
+    }
+  }
+}
+
+module.exports = Video;
