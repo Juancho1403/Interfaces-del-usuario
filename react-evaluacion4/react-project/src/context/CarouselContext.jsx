@@ -68,7 +68,8 @@ export const CarouselProvider = ({ children }) => {
       src: videoUrl,
       name: videoInfo.name,
       info: videoInfo,
-      isDefault: false
+      isDefault: false,
+      subtitles: videoInfo.subtitles || []
     };
     setCarouselVideos(prev => [...prev, newVideo]);
   };

@@ -167,7 +167,7 @@
 
 .subtitles-container {
   background: rgba(0, 0, 0, 0.8);
-  color: white;
+  color: var(--color-primary, #7AB730);
   padding: 15px;
   border-radius: 8px;
   margin-bottom: 20px;
@@ -178,6 +178,7 @@
   margin: 5px 0;
   font-size: 16px;
   font-weight: 500;
+  color: var(--color-primary, #7AB730);
 }
 
 .progress-container {

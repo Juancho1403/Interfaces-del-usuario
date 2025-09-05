@@ -183,18 +183,6 @@ const VideoEditor = ({ onVideoSave, onClose }) => {
 
               <div className="video-info-panel">
                 <h5>Información del Video</h5>
-                
-                {/* Nombre del Video */}
-                <div className="form-group">
-                  <label>Nombre del Video</label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="Escribe el nombre del video"
-                    value={videoName}
-                    onChange={(e) => setVideoName(e.target.value)}
-                  />
-                </div>
 
                 {/* Archivo de Video */}
                 <div className="form-group">

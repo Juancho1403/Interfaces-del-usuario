@@ -358,13 +358,7 @@ const MultimediaAdmin = () => {
         </div>
 
         {/* Estadísticas */}
-        <div className="row mb-4">
-          <div className="col-md-3">
-            <div className="stats-card">
-              <div className="stats-number">{images.length}</div>
-              <div className="stats-label">Imágenes en Galería</div>
-            </div>
-          </div>
+  <div className="row mb-4">
           <div className="col-md-3">
             <div className="stats-card">
               <div className="stats-number">{videos.length}</div>
@@ -791,32 +785,33 @@ const MultimediaAdmin = () => {
               <div className="modal-body">
                 <div className="row">
                   <div className="col-md-6">
-                    {activeMenu === 'images' ? (
-                      <div className="text-center">
-                        <img src={selectedItem.file} className="img-fluid rounded shadow" alt={selectedItem.name} style={{ maxHeight: '400px' }} />
-                      </div>
-                    ) : (
-                      <video controls className="img-fluid rounded shadow">
-                        <source src={selectedItem.file} type={selectedItem.format || 'video/mp4'} />
-                      </video>
-                    )}
-                  </div>
-                  <div className="col-md-6">
-                    <h6>Información General</h6>
-                    <ul className="list-unstyled">
-                      <li><strong>Nombre:</strong> {selectedItem.name}</li>
-                      <li><strong>Formato:</strong> {selectedItem.format}</li>
-                      <li><strong>Tamaño:</strong> {selectedItem.size} MB</li>
-                      {activeMenu === 'images' ? (
-                        <li><strong>Dimensiones:</strong> {selectedItem.dimensions}</li>
-                      ) : (
-                        <>
-                          <li><strong>Duración:</strong> {selectedItem.duration} segundos</li>
-                          <li><strong>Pistas de audio:</strong> {selectedItem.audioTracks?.length || 0}</li>
+                    {activeMenu === 'videos' && (
+                      <div className="gallery-section">
+                        <div className="d-flex justify-content-between align-items-center mb-4">
+                          <h4 className="text-success mb-0">Galería de Videos</h4>
+                          <div className="d-flex gap-2">
+                            {/* El input de nombre del video ha sido eliminado */}
+                            <button 
+                              className="btn btn-outline-danger"
+                              onClick={clearGallery}
+                            >
+                              <i className="bi bi-trash me-2"></i>
+                              Limpiar Galería
+                            </button>
+                            <button 
+                              className="btn upload-btn"
+                              onClick={() => setShowVideoEditor(true)}
+                            >
+                              <i className="bi bi-camera-video me-2"></i>
+                              Subir Video
+                            </button>
+                          </div>
+                        </div>
+                        <ul>
                           <li><strong>Subtítulos:</strong> {selectedItem.subtitles?.length || 0}</li>
-                        </>
-                      )}
-                    </ul>
+                        </ul>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -878,7 +873,7 @@ const MultimediaAdmin = () => {
 
       {/* Modal del Carrusel */}
       {showCarouselModal && (
-  <div className="modal fade show d-block" tabIndex="-1">
+        <div className="modal fade show d-block" tabIndex="-1">
           <div className="modal-dialog modal-xl">
             <div className="modal-content">
               <div className="modal-header">
@@ -928,6 +923,6 @@ const MultimediaAdmin = () => {
       )}
     </div>
   );
-};
+}
 
 export default MultimediaAdmin;

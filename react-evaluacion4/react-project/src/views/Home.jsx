@@ -255,10 +255,43 @@ const Home = (props) => {
                           </button>
                           <video className="w-100 rounded shadow" controls style={{ border: '4px solid #00b894' }}>
                             <source src={video.src} type={video.info?.type || 'video/mp4'} />
+                            {Array.isArray(video.subtitles) && video.subtitles.map((subtitle, idx) => (
+                              <track
+                                key={subtitle.id || idx}
+                                src={subtitle.file || subtitle.src}
+                                kind="subtitles"
+                                srcLang={subtitle.language}
+                                label={subtitle.language === 'es' ? 'Español' : subtitle.language === 'en' ? 'Inglés' : subtitle.language}
+                                default={idx === 0}
+                              />
+                            ))}
                             Tu navegador no soporta el elemento de video.
                           </video>
                           <div className="text-center mt-3">
                             <h5 className="caption">{video.name}</h5>
+                            {Array.isArray(video.subtitles) && video.subtitles.length > 0 && (
+                              <div className="mt-2">
+                                <label htmlFor={`subtitle-select-${video.id}`} className="me-2">Subtítulos:</label>
+                                <select
+                                  id={`subtitle-select-${video.id}`}
+                                  className="form-select d-inline-block w-auto"
+                                  onChange={e => {
+                                    const videoElem = e.target.closest('.col-lg-10').querySelector('video');
+                                    if (videoElem) {
+                                      Array.from(videoElem.textTracks).forEach((track, idx) => {
+                                        track.mode = idx === parseInt(e.target.value) ? 'showing' : 'disabled';
+                                      });
+                                    }
+                                  }}
+                                >
+                                  {video.subtitles.map((subtitle, idx) => (
+                                    <option key={subtitle.id || idx} value={idx}>
+                                      {subtitle.language === 'es' ? 'Español' : subtitle.language === 'en' ? 'Inglés' : subtitle.language}
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
+                            )}
                           </div>
                         </div>
                       </div>
