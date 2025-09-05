@@ -7,7 +7,15 @@ const auth = require('../middleware/authMiddleware');
 router.use(auth.auth, auth.admin);
 
 router.get('/', videoController.getVideos);
-router.post('/', videoController.createVideo);
+const upload = require('../middleware/multerConfig');
+router.post(
+	'/',
+	upload.fields([
+		{ name: 'video', maxCount: 1 },
+		{ name: 'audios', maxCount: 5 }
+	]),
+	videoController.createVideo
+);
 router.put('/:id', videoController.updateVideo);
 router.delete('/:id', videoController.deleteVideo);
 

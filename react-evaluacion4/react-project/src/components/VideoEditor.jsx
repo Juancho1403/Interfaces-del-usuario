@@ -146,11 +146,19 @@ const VideoEditor = ({ onVideoSave, onClose }) => {
                     src={selectedVideo} 
                     controls
                     className="preview-video"
-                    style={{ 
-                      maxWidth: '100%',
-                      maxHeight: '400px'
-                    }}
-                  />
+                    style={{ width: '100%' }}
+                  >
+                    {subtitles.map((subtitle, idx) => (
+                      <track
+                        key={subtitle.id}
+                        src={subtitle.file}
+                        kind="subtitles"
+                        srcLang={subtitle.language}
+                        label={subtitle.language === 'es' ? 'Español' : subtitle.language === 'en' ? 'Inglés' : subtitle.language}
+                        default={idx === 0}
+                      />
+                    ))}
+                  </video>
                 </div>
                 
                 <div className="editor-controls">

@@ -17,28 +17,49 @@ exports.getVideos = async (req, res) => {
 };
 
 // Crear un video
+
+// Requiere: npm install fluent-ffmpeg
+const ffmpeg = require('fluent-ffmpeg');
+const path = require('path');
+const fs = require('fs');
+
 exports.createVideo = async (req, res) => {
   try {
-    const { name, format, duration, size, file, audioTracks, subtitles } = req.body;
-    // Validaciones mínimas
-    if (!audioTracks || audioTracks.length < 2) {
-      return res.status(400).json({ error: 'Debe tener al menos 2 pistas de audio' });
+    // Archivos subidos: req.files = { video: [File], audios: [File, File, ...] }
+    const videoFile = req.files['video']?.[0];
+    const audioFiles = req.files['audios'] || [];
+    if (!videoFile || audioFiles.length < 2) {
+      return res.status(400).json({ error: 'Debes subir un video y al menos dos audios (español e inglés)' });
     }
-    if (!subtitles || subtitles.length < 2) {
-      return res.status(400).json({ error: 'Debe tener al menos 2 subtítulos' });
-    }
-    if (!subtitles.every(s => s.file.endsWith('.vtt'))) {
-      return res.status(400).json({ error: 'Los subtítulos deben ser archivos .vtt' });
-    }
-    // Validar duración igual
-    if (!audioTracks.every(a => Number(a.duration) === Number(duration))) {
-      return res.status(400).json({ error: 'Todas las pistas de audio deben tener la misma duración que el video' });
-    }
-    if (!subtitles.every(s => Number(s.duration) === Number(duration))) {
-      return res.status(400).json({ error: 'Todos los subtítulos deben tener la misma duración que el video' });
-    }
-    const video = await Video.save({ name, format, duration, size, file, audioTracks, subtitles });
-    res.status(201).json(video);
+
+    // Multiplexar con FFmpeg
+    const outputPath = path.join(__dirname, '../uploads', 'muxed-' + Date.now() + '.mp4');
+    let command = ffmpeg(videoFile.path);
+    audioFiles.forEach(audio => {
+      command = command.input(audio.path);
+    });
+    command.outputOptions([
+      '-map 0:v:0', // video
+      '-map 1:a:0', // primer audio
+      '-map 2:a:0', // segundo audio
+      '-c:v copy',
+      '-c:a aac',
+      '-metadata:s:a:0 language=es',
+      '-metadata:s:a:1 language=en'
+    ]);
+    command.save(outputPath)
+      .on('end', async () => {
+        // Aquí puedes guardar en la BD si lo necesitas
+        res.status(201).json({ file: outputPath, message: 'Video multiplexado correctamente' });
+        // Opcional: eliminar archivos temporales
+        try {
+          fs.unlinkSync(videoFile.path);
+          audioFiles.forEach(a => fs.unlinkSync(a.path));
+        } catch {}
+      })
+      .on('error', err => {
+        res.status(500).json({ error: 'Error al multiplexar video', details: err.message });
+      });
   } catch (err) {
     res.status(500).json({ error: 'Error al crear video', details: err.message });
   }

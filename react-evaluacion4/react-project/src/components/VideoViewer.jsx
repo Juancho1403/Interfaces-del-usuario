@@ -1,341 +1,445 @@
-import React, { useState, useRef, useEffect } from 'react';
-import './VideoViewer.css';
+import React, { useEffect, useRef, useState } from 'react';
+import './VideoViewer.css'; // opcional
 
-const VideoViewer = ({ video, onClose }) => {
-  const [currentAudioTrack, setCurrentAudioTrack] = useState('original');
-  const [currentSubtitle, setCurrentSubtitle] = useState('disabled');
-  // Prefiere pistas del objeto video; si no existen, usa valores de ejemplo
-  const [audioTracks, setAudioTracks] = useState(() => {
-    const tracks = Array.isArray(video.audioTracks) ? video.audioTracks : [];
-    const base = [{ id: 'original', name: 'Audio Original', language: 'es' }];
-    return base.concat(tracks);
-  });
-  const [subtitles, setSubtitles] = useState(() => {
-    const subs = Array.isArray(video.subtitles) ? video.subtitles : [];
-    return [{ id: 'disabled', name: 'Desactivado', language: 'none' }].concat(
-      subs.map(s => ({ id: s.id || s.language || 'custom', name: s.name || (s.language === 'es' ? 'Español' : s.language === 'en' ? 'Inglés' : 'Subtítulo'), language: s.language, file: s.file }))
-    );
-  });
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState(1.0);
-  
+/* Helpers para subtítulos (los mantuve) */
+const parseTimestampToSeconds = (ts) => {
+  const parts = ts.split(':').map(p => p.replace(',', '.'));
+  let secs = 0;
+  if (parts.length === 3) {
+    secs = Number(parts[0]) * 3600 + Number(parts[1]) * 60 + Number(parts[2]);
+  } else if (parts.length === 2) {
+    secs = Number(parts[0]) * 60 + Number(parts[1]);
+  } else {
+    secs = Number(parts[0]);
+  }
+  return secs;
+};
+
+const parseVTTorSRT = (text) => {
+  const cues = [];
+  text = text.replace(/\r\n/g, '\n');
+  text = text.replace(/^WEBVTT[^\n]*\n*/i, '');
+  const blocks = text.split(/\n{2,}/);
+  for (const block of blocks) {
+    const match = block.match(/(\d{1,2}:\d{2}:\d{2}[.,]\d{3}|\d{1,2}:\d{2}[.,]\d{3}).*?-->\s*(\d{1,2}:\d{2}:\d{2}[.,]\d{3}|\d{1,2}:\d{2}[.,]\d{3})/);
+    if (match) {
+      const start = parseTimestampToSeconds(match[1].replace(',', '.'));
+      const end = parseTimestampToSeconds(match[2].replace(',', '.'));
+      const lines = block.split('\n').filter(l => !/^\s*\d+\s*$/.test(l) && !/-->/.test(l));
+      const cueText = lines.join('\n').trim();
+      cues.push({ start, end, text: cueText });
+    }
+  }
+  return cues;
+};
+
+const srtToVttText = (srtText) => {
+  const normalized = srtText.replace(/\r\n/g, '\n');
+  return 'WEBVTT\n\n' + normalized.replace(/(\d{2}:\d{2}:\d{2}),(\d{3})/g, '$1.$2');
+};
+
+/**
+ * VideoViewerSimple con subtítulos nativos funcionales y audio externo totalmente operativo
+ * Props:
+ *  - video: { file: string|File, name, audioTracks: [{id,name,language,src|file|url}], subtitles: [...] }
+ *  - onClose: fn
+ */
+const VideoViewerSimple = ({ video = {}, onClose }) => {
   const videoRef = useRef(null);
   const audioRef = useRef(null);
+  const createdUrlsRef = useRef([]);
 
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.addEventListener('loadedmetadata', () => {
-        setDuration(videoRef.current.duration);
-        // Si no se proveyeron subtítulos desde props, intenta leer los textTracks del video
-        const tracks = videoRef.current.textTracks;
-        if (tracks && tracks.length > 0) {
-          const found = [{ id: 'disabled', name: 'Desactivado', language: 'none' }];
-          for (let i = 0; i < tracks.length; i++) {
-            const t = tracks[i];
-            const lang = t.language || t.label;
-            found.push({
-              id: lang || `track_${i}`,
-              name: lang === 'es' ? 'Español' : lang === 'en' ? 'Inglés' : (t.label || `Subtítulo ${i+1}`),
-              language: t.language,
-            });
-          }
-          setSubtitles(found);
-        }
-      });
-      
-      videoRef.current.addEventListener('timeupdate', () => {
-        setCurrentTime(videoRef.current.currentTime);
-        // Mantener audio externo sincronizado
-        if (audioRef.current && currentAudioTrack !== 'original') {
-          const diff = Math.abs((audioRef.current.currentTime || 0) - videoRef.current.currentTime);
-          if (diff > 0.3) {
-            audioRef.current.currentTime = videoRef.current.currentTime;
-          }
-        }
-      });
-      
-      videoRef.current.addEventListener('play', () => {
-        setIsPlaying(true);
-        if (audioRef.current && currentAudioTrack !== 'original' && audioRef.current.src) {
-          audioRef.current.play().catch(() => {});
-        }
-      });
-      
-      videoRef.current.addEventListener('pause', () => {
-        setIsPlaying(false);
-        if (audioRef.current) audioRef.current.pause();
-      });
+  const [videoSrc, setVideoSrc] = useState(() => {
+    const f = video?.file;
+    if (f instanceof File) {
+      const u = URL.createObjectURL(f);
+      createdUrlsRef.current.push(u);
+      return u;
     }
+    return typeof f === 'string' ? f : null;
+  });
+
+  const [audioTracks, setAudioTracks] = useState(() => {
+    const tracks = Array.isArray(video?.audioTracks) ? video.audioTracks : [];
+    const normalized = tracks.map((t, i) => {
+      const src = t.src ?? t.file ?? t.url ?? null;
+      if (src instanceof File) {
+        const u = URL.createObjectURL(src);
+        createdUrlsRef.current.push(u);
+        return { id: t.id ?? `audio_${i}`, name: t.name ?? src.name, language: t.language ?? '', src: u };
+      }
+      return { id: t.id ?? `audio_${i}`, name: t.name ?? `Pista ${i + 1}`, language: t.language ?? '', src: src ?? null };
+    });
+    const base = [{ id: 'original', name: 'Audio Original', language: video?.info?.language || 'und', src: null }];
+    return base.concat(normalized);
+  });
+
+  // Subtítulos normalizados
+  const [subtitles, setSubtitles] = useState(() => {
+    const subs = Array.isArray(video?.subtitles) ? video.subtitles : [];
+    const normalized = subs.map((s, i) => {
+      const src = s.src ?? s.file ?? s.url ?? null;
+      if (src instanceof File) {
+        const u = URL.createObjectURL(src);
+        createdUrlsRef.current.push(u);
+        return { id: s.id ?? `sub_${i}`, name: s.name ?? src.name, language: s.language ?? '', src: u };
+      }
+      return { id: s.id ?? `sub_${i}`, name: s.name ?? `Sub ${i + 1}`, language: s.language ?? '', src: src ?? null };
+    });
+    return [{ id: 'disabled', name: 'Desactivado', language: 'none', src: null }, ...normalized];
+  });
+
+  const [currentSubtitle, setCurrentSubtitle] = useState('disabled');
+  const [subtitleText, setSubtitleText] = useState(''); // overlay fallback
+  const [currentAudioTrack, setCurrentAudioTrack] = useState('original');
+
+  // Estados de reproducción (útiles para decidir si reproducir audio externo al cambiar pista)
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+
+  // When video prop changes, recreate objectURLs and reset arrays
+  useEffect(() => {
+    const f = video?.file;
+    if (f instanceof File) {
+      const u = URL.createObjectURL(f);
+      createdUrlsRef.current.push(u);
+      setVideoSrc(u);
+    } else if (typeof f === 'string') {
+      setVideoSrc(f);
+    } else {
+      setVideoSrc(null);
+    }
+
+    if (Array.isArray(video?.audioTracks)) {
+      const incoming = video.audioTracks.map((t, i) => {
+        const s = t.src ?? t.file ?? t.url ?? null;
+        if (s instanceof File) {
+          const u = URL.createObjectURL(s);
+          createdUrlsRef.current.push(u);
+          return { id: t.id ?? `audio_${i}`, name: t.name ?? s.name, language: t.language ?? '', src: u };
+        }
+        return { id: t.id ?? `audio_${i}`, name: t.name ?? `Pista ${i + 1}`, language: t.language ?? '', src: s ?? null };
+      });
+      setAudioTracks([{ id: 'original', name: 'Audio Original', language: video?.info?.language || 'und', src: null }, ...incoming]);
+      setCurrentAudioTrack('original');
+    }
+
+    if (Array.isArray(video?.subtitles)) {
+      const incoming = video.subtitles.map((s, i) => {
+        const src = s.src ?? s.file ?? s.url ?? null;
+        if (src instanceof File) {
+          const u = URL.createObjectURL(src);
+          createdUrlsRef.current.push(u);
+          return { id: s.id ?? `sub_${i}`, name: s.name ?? src.name, language: s.language ?? '', src: u };
+        }
+        return { id: s.id ?? `sub_${i}`, name: s.name ?? `Sub ${i + 1}`, language: s.language ?? '', src: src ?? null };
+      });
+      setSubtitles([{ id: 'disabled', name: 'Desactivado', language: 'none', src: null }, ...incoming]);
+      setCurrentSubtitle('disabled');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [video]);
+
+  // cleanup objectURLs
+  useEffect(() => {
+    return () => {
+      createdUrlsRef.current.forEach(u => {
+        try { URL.revokeObjectURL(u); } catch {}
+      });
+      createdUrlsRef.current = [];
+    };
   }, []);
 
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const handlePlayPause = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
+  // Apply native textTrack mode (showing/hidden)
+  const applySubtitleMode = (subtitleId) => {
+    const v = videoRef.current;
+    if (!v) return;
+    const tracks = v.textTracks || [];
+    for (let i = 0; i < tracks.length; i++) {
+      const t = tracks[i];
+      const match = subtitleId !== 'disabled' &&
+        (t.label === subtitleId || t.language === subtitleId || String(i) === String(subtitleId));
+      try {
+        t.mode = match ? 'showing' : 'hidden';
+      } catch {
+        try { t.mode = match ? 'showing' : 'disabled'; } catch {}
       }
     }
   };
 
-  const handleSeek = (e) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const width = rect.width;
-    const seekTime = (clickX / width) * duration;
-    videoRef.current.currentTime = seekTime;
-  };
+  // Listeners: activeCues for native subtitles + audio sync + playing state
+  useEffect(() => {
+    const v = videoRef.current;
+    const a = audioRef.current;
+    if (!v) return;
 
-  const handleSpeedChange = (speed) => {
-    setPlaybackSpeed(speed);
-    if (videoRef.current) {
-      videoRef.current.playbackRate = speed;
+    const onLoaded = () => applySubtitleMode(currentSubtitle);
+
+    const onTime = () => {
+      const now = v.currentTime || 0;
+
+      // leer activeCues si el navegador las expone
+      let shown = false;
+      const tt = v.textTracks || [];
+      for (let i = 0; i < tt.length; i++) {
+        try {
+          const track = tt[i];
+          if (track.mode === 'showing' && track.activeCues && track.activeCues.length > 0) {
+            const t = Array.from(track.activeCues).map(c => c.text).join('\n');
+            setSubtitleText(t);
+            shown = true;
+            break;
+          }
+        } catch {}
+      }
+      if (!shown) setSubtitleText('');
+
+      // sync external audio if selected
+      if (a && currentAudioTrack !== 'original' && a.src) {
+        const diff = Math.abs((a.currentTime || 0) - now);
+        if (diff > 0.35) {
+          try { a.currentTime = now; } catch {}
+        }
+      }
+    };
+
+    const onPlayVideo = () => setIsVideoPlaying(true);
+    const onPauseVideo = () => setIsVideoPlaying(false);
+
+    const onPlayAudio = () => setIsAudioPlaying(true);
+    const onPauseAudio = () => setIsAudioPlaying(false);
+
+    const onRate = () => {
+      if (a) a.playbackRate = v.playbackRate || 1;
+    };
+
+    v.addEventListener('loadedmetadata', onLoaded);
+    v.addEventListener('timeupdate', onTime);
+    v.addEventListener('play', onPlayVideo);
+    v.addEventListener('pause', onPauseVideo);
+    v.addEventListener('ratechange', onRate);
+
+    if (a) {
+      a.addEventListener('play', onPlayAudio);
+      a.addEventListener('pause', onPauseAudio);
+      a.addEventListener('ratechange', onRate);
     }
-  };
 
-  const handleAudioTrackChange = (trackId) => {
-    setCurrentAudioTrack(trackId);
-    const selected = audioTracks.find(t => t.id === trackId);
-    if (!videoRef.current) return;
-    // Si es la pista original (del video), desmutear el video y pausar audio externo
-    if (!selected || trackId === 'original') {
-      videoRef.current.muted = false;
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeAttribute('src');
+    return () => {
+      v.removeEventListener('loadedmetadata', onLoaded);
+      v.removeEventListener('timeupdate', onTime);
+      v.removeEventListener('play', onPlayVideo);
+      v.removeEventListener('pause', onPauseVideo);
+      v.removeEventListener('ratechange', onRate);
+
+      if (a) {
+        a.removeEventListener('play', onPlayAudio);
+        a.removeEventListener('pause', onPauseAudio);
+        a.removeEventListener('ratechange', onRate);
+      }
+    };
+  }, [currentSubtitle, currentAudioTrack]);
+
+  // Efecto central: cuando cambia currentAudioTrack aplicamos/mutear, asignamos src y sincronizamos.
+  useEffect(() => {
+    const v = videoRef.current;
+    const a = audioRef.current;
+    const selected = audioTracks.find(t => t.id === currentAudioTrack);
+
+    if (!selected || currentAudioTrack === 'original') {
+      // volver al audio original del video
+      if (v) v.muted = false;
+      if (a) {
+        a.pause();
+        a.src = '';
       }
       return;
     }
-    // Usar pista de audio externa sincronizada
-    videoRef.current.muted = true;
-    if (audioRef.current && selected.file) {
-      const wasPlaying = !videoRef.current.paused;
-      audioRef.current.src = selected.file;
-      audioRef.current.currentTime = videoRef.current.currentTime || 0;
-      audioRef.current.playbackRate = videoRef.current.playbackRate || 1;
-      if (wasPlaying) {
-        audioRef.current.play().catch(() => {});
-      }
+
+    // pista externa seleccionada
+    if (v) v.muted = true;
+    if (!a) return;
+
+    const wasPlaying = v && !v.paused;
+
+    // Si es la misma src, no reasignar (para evitar reload)
+    if (a.src !== selected.src) {
+      a.src = selected.src;
     }
+    // sincronizar tiempo y velocidad
+    try { a.currentTime = v?.currentTime || 0; } catch {}
+    try { a.playbackRate = v?.playbackRate || 1; } catch {}
+
+    // si el video está reproduciéndose, lanzar audio externo
+    if (wasPlaying) {
+      a.play().catch(() => {});
+    } else {
+      // no reproducir automáticamente si el video está en pausa; el usuario decide
+      // (pero dejamos el src listo)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentAudioTrack, audioTracks]);
+
+  // handle change: sólo setea el estado (el efecto hace el resto)
+  const handleAudioTrackChange = (trackId) => {
+    setCurrentAudioTrack(trackId);
   };
 
-  const handleSubtitleChange = (subtitleId) => {
-    setCurrentSubtitle(subtitleId);
-    const tracks = videoRef.current ? videoRef.current.textTracks : [];
-    if (!tracks) return;
-    for (let i = 0; i < tracks.length; i++) {
-      const track = tracks[i];
-      track.mode = 'disabled';
-      // Habilita el que coincida por label o srclang con el id
-      if (subtitleId !== 'disabled' && (track.label === subtitleId || track.language === subtitleId)) {
-        track.mode = 'showing';
-      }
-    }
-  };
-
+  // añadir pista de audio local (y seleccionarla)
   const addAudioTrack = () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'audio/*';
-    input.onchange = (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const newTrack = {
-          id: `track_${Date.now()}`,
-          name: file.name,
-          language: 'es',
-          file: URL.createObjectURL(file)
-        };
-        setAudioTracks(prev => [...prev, newTrack]);
-      }
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const u = URL.createObjectURL(file);
+      createdUrlsRef.current.push(u);
+      const newTrack = { id: `audio_${Date.now()}`, name: file.name, language: 'und', src: u };
+      setAudioTracks(prev => {
+        const next = [...prev, newTrack];
+        // seleccionar inmediatamente la nueva pista
+        setCurrentAudioTrack(newTrack.id);
+        return next;
+      });
     };
     input.click();
   };
 
-  const removeAudioTrack = (trackId) => {
-    setAudioTracks(prev => prev.filter(track => track.id !== trackId));
+  // añadir subtítulo local (.vtt .srt)
+  const addSubtitleFile = () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.vtt,.srt,text/vtt,text/plain';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        let content = ev.target.result;
+        const isVtt = file.name.toLowerCase().endsWith('.vtt') || content.trim().startsWith('WEBVTT');
+        if (!isVtt) content = srtToVttText(content);
+        const blob = new Blob([content], { type: 'text/vtt' });
+        const url = URL.createObjectURL(blob);
+        createdUrlsRef.current.push(url);
+        const newSub = {
+          id: `sub_${Date.now()}`,
+          name: file.name,
+          language: file.name.toLowerCase().includes('es') ? 'es' : file.name.toLowerCase().includes('en') ? 'en' : '',
+          src: url
+        };
+        setSubtitles(prev => [...prev, newSub]);
+        setTimeout(() => setCurrentSubtitle(newSub.id), 150);
+      };
+      reader.readAsText(file);
+    };
+    input.click();
+  };
+
+  // Forzar sincronía manual
+  const forceSync = () => {
+    const v = videoRef.current;
+    const a = audioRef.current;
+    if (!v || !a) return;
+    try { a.currentTime = v.currentTime || 0; } catch {}
+  };
+
+  const getActiveTrackLabel = () => {
+    const sel = audioTracks.find(t => t.id === currentAudioTrack);
+    if (!sel || currentAudioTrack === 'original') return 'Audio original (dentro del video)';
+    return `${sel.name}${sel.language ? ` (${sel.language})` : ''}`;
   };
 
   return (
-    <div className="video-viewer-modal">
-      <div className="video-viewer-content">
-        <div className="video-viewer-header">
-          <h3>Reproductor de Video</h3>
-          <button className="btn btn-close" onClick={onClose}>×</button>
-        </div>
-
-        <div className="video-viewer-body">
-          <div className="video-container">
-            <div className="video-title">
-              <h4>{video.name || 'Mar en calma al atardecer'}</h4>
-            </div>
-            
-            <div className="video-player">
-              <video 
-                ref={videoRef}
-                src={video.file} 
-                className="main-video"
-                muted={currentAudioTrack !== 'original'}
-                controls={false}
-              >
-                {subtitles
-                  .filter(s => s.id !== 'disabled' && s.file)
-                  .map(s => (
-                    <track
-                      key={s.id}
-                      kind="subtitles"
-                      srcLang={s.language || s.id}
-                      label={s.name || s.id}
-                      src={s.file}
-                    />
-                  ))}
-              </video>
-              {/* audio externo para pistas alternativas */}
-              <audio ref={audioRef} />
-              
-              {/* Overlay de controles */}
-              <div className="video-overlay">
-                <div className="play-button" onClick={handlePlayPause}>
-                  <i className={`bi ${isPlaying ? 'bi-pause-circle' : 'bi-play-circle'}`}></i>
-                </div>
-              </div>
-            </div>
-
-            {/* Controles de audio y subtítulos */}
-            <div className="media-controls">
-              <div className="control-group">
-                <label>Pista de Audio:</label>
-                <select 
-                  value={currentAudioTrack} 
-                  onChange={(e) => handleAudioTrackChange(e.target.value)}
-                  className="form-select"
-                >
-                  {audioTracks.map(track => (
-                    <option key={track.id} value={track.id}>
-                      {track.name}
-                    </option>
-                  ))}
-                </select>
-                <button 
-                  className="btn btn-sm btn-outline-primary"
-                  onClick={addAudioTrack}
-                >
-                  + Añadir pista de audio
-                </button>
-              </div>
-
-              <div className="control-group">
-                <label>Subtítulos:</label>
-                <select 
-                  value={currentSubtitle} 
-                  onChange={(e) => handleSubtitleChange(e.target.value)}
-                  className="form-select"
-                >
-                  {subtitles.map(subtitle => (
-                    <option key={subtitle.id} value={subtitle.id}>
-                      {subtitle.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Subtítulos simulados */}
-            {currentSubtitle !== 'disabled' && (
-              <div className="subtitles-container">
-                <div className="subtitles-text">
-                  <p>El cielo se llena de hermosos colores.</p>
-                  <p>El sol se está poniendo en un mar tranquilo.</p>
-                </div>
-              </div>
-            )}
-
-            {/* Barra de progreso */}
-            <div className="progress-container">
-              <div className="progress-bar" onClick={handleSeek}>
-                <div 
-                  className="progress-fill" 
-                  style={{ width: `${(currentTime / duration) * 100}%` }}
-                ></div>
-                <div 
-                  className="progress-handle" 
-                  style={{ left: `${(currentTime / duration) * 100}%` }}
-                ></div>
-              </div>
-              <div className="time-display">
-                <span>{formatTime(currentTime)}</span>
-                <span>{formatTime(duration)}</span>
-              </div>
-            </div>
-
-            {/* Controles de velocidad */}
-            <div className="speed-controls">
-              <label>Velocidad:</label>
-              <div className="speed-buttons">
-                {[0.5, 0.75, 1.0, 1.25, 1.5, 2.0].map(speed => (
-                  <button
-                    key={speed}
-                    className={`btn btn-sm ${playbackSpeed === speed ? 'btn-primary' : 'btn-outline-primary'}`}
-                    onClick={() => handleSpeedChange(speed)}
-                  >
-                    {speed}x
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Lista de pistas de audio */}
-            <div className="audio-tracks-list">
-              <h6>Pistas de Audio Disponibles:</h6>
-              <div className="tracks-container">
-                {audioTracks.map(track => (
-                  <div key={track.id} className="track-item">
-                    <div className="track-info">
-                      <span className="track-name">{track.name}</span>
-                      <span className="track-language">({track.language})</span>
-                    </div>
-                    <div className="track-actions">
-                      <button 
-                        className="btn btn-sm btn-outline-success"
-                        onClick={() => handleAudioTrackChange(track.id)}
-                      >
-                        <i className="bi bi-play"></i>
-                      </button>
-                      {track.id !== 'original' && track.id !== 'original2' && (
-                        <button 
-                          className="btn btn-sm btn-outline-danger"
-                          onClick={() => removeAudioTrack(track.id)}
-                        >
-                          <i className="bi bi-trash"></i>
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
+    <div className="video-viewer-modal" style={{
+      position: 'fixed', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.6)', zIndex: 9999, padding: 16
+    }}>
+      <div className="video-viewer-content" style={{ width: '100%', maxWidth: 980, borderRadius: 10, overflow: 'hidden', background: '#111', padding: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+          <h4 style={{ margin: 0, color: '#fff' }}>{video.name || 'Video'}</h4>
+          <div>
+            <button className="btn btn-sm" onClick={() => {
+              if (videoRef.current) { videoRef.current.pause(); videoRef.current.currentTime = 0; }
+              if (audioRef.current) { audioRef.current.pause(); audioRef.current.src = ''; }
+              onClose && onClose();
+            }}>Cerrar</button>
           </div>
         </div>
 
-        <div className="video-viewer-footer">
-          <button className="btn btn-secondary" onClick={onClose}>
-            Cerrar
-          </button>
-          <button className="btn btn-primary">
-            Guardar Cambios
-          </button>
+        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 10 }}>
+          <video
+            ref={videoRef}
+            src={videoSrc}
+            controls
+            muted={currentAudioTrack !== 'original'}
+            style={{ width: '100%', maxHeight: '65vh', borderRadius: 8, background: '#000' }}
+          >
+            {subtitles.filter(s => s.id !== 'disabled' && s.src).map(s => (
+              <track
+                key={s.id}
+                kind="subtitles"
+                srcLang={s.language || ''}
+                label={s.name}
+                src={s.src}
+              />
+            ))}
+            Tu navegador no soporta el elemento <code>video</code>.
+          </video>
+          <audio ref={audioRef} style={{ display: 'none' }} />
         </div>
+
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <label style={{ color: '#ddd' }}>Pista de audio:</label>
+            <select value={currentAudioTrack} onChange={(e) => handleAudioTrackChange(e.target.value)} style={{ padding: '6px 8px' }}>
+              {audioTracks.map(a => <option key={a.id} value={a.id}>{a.name}{a.language ? ` (${a.language})` : ''}</option>)}
+            </select>
+            <button className="btn btn-sm" onClick={addAudioTrack}>+ Añadir</button>
+          </div>
+
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <label style={{ color: '#ddd' }}>Subtítulos:</label>
+            <select value={currentSubtitle} onChange={(e) => setCurrentSubtitle(e.target.value)} style={{ padding: '6px 8px' }}>
+              {subtitles.map(s => <option key={s.id} value={s.id}>{s.name}{s.language ? ` (${s.language})` : ''}</option>)}
+            </select>
+            <button className="btn btn-sm" onClick={addSubtitleFile}>+ Añadir</button>
+          </div>
+
+          <div style={{ color: '#ddd', fontSize: 14, display: 'flex', gap: 12, alignItems: 'center' }}>
+            <div>
+              <div>Activo: <strong style={{ color: '#fff' }}>{getActiveTrackLabel()}</strong></div>
+              <div style={{ fontSize: 12, color: '#bdbdbd' }}>
+                {currentAudioTrack === 'original'
+                  ? (isVideoPlaying ? 'Reproduciendo (video)' : 'Pausado (video)')
+                  : (isAudioPlaying ? 'Reproduciendo (audio externo)' : 'Pausado (audio externo)')}
+              </div>
+            </div>
+            <button className="btn btn-sm btn-outline-light" onClick={forceSync} title="Forzar sincronía">Forzar sincronía</button>
+          </div>
+        </div>
+
+        {/* overlay opcional */}
+        <div className="subtitle-overlay" aria-live="polite" style={{ textAlign: 'center', marginTop: 12 }}>
+          {subtitleText ? (
+            <div style={{
+              display: 'inline-block',
+              background: 'rgba(0,0,0,0.65)',
+              color: 'white',
+              padding: '8px 12px',
+              borderRadius: 6,
+              maxWidth: '90%',
+              fontSize: 16,
+              lineHeight: 1.3
+            }}>
+              {subtitleText.split('\n').map((line, i) => <div key={i}>{line}</div>)}
+            </div>
+          ) : null}
+        </div>
+
       </div>
     </div>
   );
 };
 
-export default VideoViewer;
+export default VideoViewerSimple;

@@ -9,6 +9,32 @@ import { useCarousel } from '../context/CarouselContext';
 const MultimediaAdmin = () => {
   const [activeMenu, setActiveMenu] = useState('images');
   const [videos, setVideos] = useState([]);
+  const [videoThumbnails, setVideoThumbnails] = useState({}); // id -> thumbnail
+  // Extraer primer frame de un video
+  const extractThumbnail = (videoSrc, videoId) => {
+    if (!videoSrc || !videoId) return;
+    const tempVideo = document.createElement('video');
+    tempVideo.src = videoSrc;
+    tempVideo.preload = 'auto';
+    tempVideo.muted = true;
+    tempVideo.crossOrigin = 'anonymous';
+    tempVideo.addEventListener('loadedmetadata', () => {
+      try {
+        tempVideo.currentTime = 0.01;
+      } catch {}
+    }, { once: true });
+    tempVideo.addEventListener('seeked', () => {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = tempVideo.videoWidth;
+        canvas.height = tempVideo.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(tempVideo, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        setVideoThumbnails(prev => ({ ...prev, [videoId]: dataUrl }));
+      } catch {}
+    }, { once: true });
+  };
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
@@ -35,6 +61,16 @@ const MultimediaAdmin = () => {
     fetchVideos();
     fetchImages();
   }, []);
+
+  // Extraer miniaturas cuando videos cambian
+  useEffect(() => {
+    videos.forEach(video => {
+      if (!videoThumbnails[video.id] && video.file) {
+        extractThumbnail(video.file, video.id);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [videos]);
 
   // Funciones para conectar con el backend
   const fetchVideos = async () => {
@@ -459,7 +495,7 @@ const MultimediaAdmin = () => {
                 </button>
               </div>
               <ul className="list-group list-group-flush" style={{ maxHeight: 220, overflowY: 'auto' }}>
-                {carouselVideos.map(vid => (
+                {carouselVideos.map((vid) => (
                   <li key={vid.id} className="list-group-item d-flex align-items-center">
                     <input
                       className="form-check-input me-2"
@@ -469,7 +505,13 @@ const MultimediaAdmin = () => {
                         setSelectedCarouselVideos(prev => e.target.checked ? [...prev, vid.id] : prev.filter(id => id !== vid.id));
                       }}
                     />
-                    <div className="me-2" style={{ width: 48, height: 32, background: '#ddd' }}></div>
+                    {videoThumbnails[vid.id] ? (
+                      <img src={videoThumbnails[vid.id]} alt={vid.name} style={{ width: 48, height: 32, objectFit: 'cover', borderRadius: 4, background: '#222' }} />
+                    ) : (
+                      <div style={{ width: 48, height: 32, background: '#ddd', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '1.2rem' }}>
+                        <i className="bi bi-film"></i>
+                      </div>
+                    )}
                     <span className="flex-grow-1 small text-truncate">{vid.name}</span>
                     <button className="btn btn-sm btn-outline-danger" onClick={() => removeCarouselVideo(vid.id)}>Quitar</button>
                   </li>
@@ -645,9 +687,13 @@ const MultimediaAdmin = () => {
                 {videos.map((video, index) => (
                   <div key={index} className="col-lg-4 col-md-6 col-sm-12">
                     <div className="card media-card">
-                      <video className="card-img-top" muted>
-                        <source src={video.file} type={video.format || 'video/mp4'} />
-                      </video>
+                      {videoThumbnails[video.id] ? (
+                        <img className="card-img-top" src={videoThumbnails[video.id]} alt={video.name} style={{ width: '100%', height: '200px', objectFit: 'cover', background: '#222' }} />
+                      ) : (
+                        <div style={{ width: '100%', height: '200px', background: '#222', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#bbb', fontSize: '2.5rem' }}>
+                          <i className="bi bi-film"></i>
+                        </div>
+                      )}
                       <div className="card-body">
                         <h6 className="card-title">{video.name}</h6>
                         <div className="small text-muted mb-3">
