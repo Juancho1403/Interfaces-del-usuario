@@ -183,6 +183,9 @@ const VideoEditor = ({ onVideoSave, onClose }) => {
 
               <div className="video-info-panel">
                 <h5>Información del Video</h5>
+                
+                {/* Nombre del Video */}
+                
 
                 {/* Archivo de Video */}
                 <div className="form-group">
