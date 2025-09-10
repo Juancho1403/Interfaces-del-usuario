@@ -1,0 +1,190 @@
+<!-- Welcome Message -->
+@if (showWelcome) {
+  <div class="alert alert-success text-center" style="margin: 0; border-radius: 0;">
+    <strong>¡Bienvenido a Traveler!</strong> Descubre los mejores destinos del mundo con nosotros.
+  </div>
+}
+
+<!-- Carousel Section -->
+<div class="container-fluid p-0">
+  <div id="header-carousel" class="carousel slide" data-bs-ride="carousel">
+    <div class="carousel-inner">
+      @for (image of carouselImages; track image.id; let i = $index) {
+        <div class="carousel-item" [class.active]="i === 0">
+          <img class="w-100" [src]="image.src" [alt]="image.name" style="height: 500px; object-fit: cover;">
+          <div class="carousel-caption d-flex flex-column align-items-center justify-content-center">
+            <div class="p-3" style="max-width: 900px;">
+              <h1 class="display-3 text-white mb-md-4">Descubre el Mundo</h1>
+              <p class="lead text-white mb-md-4">Explora los destinos más increíbles con nuestros paquetes de viaje exclusivos</p>
+              <div class="d-flex gap-3">
+                <a class="btn btn-primary py-md-3 px-md-5 me-3" routerLink="/package">Paquetes de Viaje</a>
+                <a class="btn btn-light py-md-3 px-md-5" routerLink="/contact">Contacto</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+    <button class="carousel-control-prev" type="button" data-bs-target="#header-carousel" data-bs-slide="prev">
+      <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#header-carousel" data-bs-slide="next">
+      <span class="carousel-control-next-icon" aria-hidden="true"></span>
+      <span class="visually-hidden">Next</span>
+    </button>
+  </div>
+</div>
+
+<!-- About Section -->
+<div class="container-fluid py-5">
+  <div class="container py-5">
+    <div class="row align-items-center">
+      <div class="col-lg-5">
+        <img class="img-fluid rounded mb-4 mb-lg-0" src="assets/about.jpg" alt="About Us">
+      </div>
+      <div class="col-lg-7">
+        <h6 class="text-primary text-uppercase" style="letter-spacing: 5px;">Sobre Nosotros</h6>
+        <h1 class="display-4 mb-4">Tu Compañero de Viaje Perfecto</h1>
+        @if (isLoading) {
+          <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Cargando...</span>
+            </div>
+          </div>
+        } @else {
+          <p class="mb-4">{{ aboutData?.description || 'Somos una empresa comprometida con la excelencia y la innovación.' }}</p>
+          <div class="row">
+            @for (feature of aboutData?.features || []; track $index) {
+              <div class="col-sm-6 mb-3">
+                <i class="fa fa-check text-primary me-2"></i>
+                <strong>{{ feature.title }}</strong><br>
+                <small>{{ feature.description }}</small>
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Services Section -->
+<div class="container-fluid py-5">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h6 class="text-primary text-uppercase" style="letter-spacing: 5px;">Servicios</h6>
+      <h1 class="display-4 mb-4">Nuestros Servicios</h1>
+    </div>
+    <div class="row">
+      @for (service of services; track service.title) {
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="service-item bg-white text-center p-4">
+            <i [class]="service.icon + ' fa-2x text-primary mb-4'"></i>
+            <h5 class="mb-3">{{ service.title }}</h5>
+            <p class="mb-0">{{ service.desc }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Destinations Section -->
+<div class="container-fluid py-5">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h6 class="text-primary text-uppercase" style="letter-spacing: 5px;">Destinos</h6>
+      <h1 class="display-4 mb-4">Explora el Mundo</h1>
+    </div>
+    <div class="row">
+      @for (destination of destinations; track destination.name) {
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="destination-item position-relative overflow-hidden mb-2">
+            <img class="img-fluid" [src]="destination.img" [alt]="destination.name" style="width: 100%; height: 300px; object-fit: cover;">
+            <div class="destination-overlay d-flex align-items-center justify-content-center">
+              <div class="text-center text-white">
+                <h4 class="mb-2">{{ destination.name }}</h4>
+                <p class="mb-0">{{ destination.cities }} Ciudades</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Packages Section -->
+<div class="container-fluid py-5">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h6 class="text-primary text-uppercase" style="letter-spacing: 5px;">Paquetes</h6>
+      <h1 class="display-4 mb-4">Paquetes de Viaje</h1>
+    </div>
+    <div class="row">
+      @for (pkg of packages; track $index) {
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="package-item bg-white rounded shadow-sm">
+            <div class="package-img">
+              <img class="img-fluid" [src]="pkg.img" [alt]="pkg.title" style="width: 100%; height: 200px; object-fit: cover;">
+            </div>
+            <div class="p-4">
+              <div class="d-flex justify-content-between mb-2">
+                <small class="m-0"><i class="fa fa-map-marker-alt text-primary me-2"></i>{{ pkg.country }}</small>
+                <small class="m-0"><i class="fa fa-calendar-alt text-primary me-2"></i>{{ pkg.days }} días</small>
+              </div>
+              <h5 class="mb-3">{{ pkg.title }}</h5>
+              <div class="d-flex justify-content-between">
+                <div class="d-flex align-items-center">
+                  <small class="m-0"><i class="fa fa-star text-primary"></i></small>
+                  <small class="m-0 ms-1">{{ pkg.rating }}</small>
+                  <small class="m-0 ms-1">({{ pkg.reviews }})</small>
+                </div>
+                <div class="d-flex align-items-center">
+                  <small class="m-0"><i class="fa fa-users text-primary me-2"></i>{{ pkg.people }}</small>
+                </div>
+              </div>
+              <div class="d-flex justify-content-between mt-3">
+                <h5 class="m-0 text-primary">${{ pkg.price }}</h5>
+                <a class="btn btn-primary" routerLink="/package">Ver Detalles</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+<!-- Testimonials Section -->
+<div class="container-fluid py-5 bg-light">
+  <div class="container py-5">
+    <div class="text-center mb-5">
+      <h6 class="text-primary text-uppercase" style="letter-spacing: 5px;">Testimonios</h6>
+      <h1 class="display-4 mb-4">Lo que Dicen Nuestros Clientes</h1>
+    </div>
+    <div class="row justify-content-center">
+      <div class="col-lg-8">
+        <div class="testimonial-item text-center">
+          <div class="testimonial-img mb-4">
+            <img class="img-fluid rounded-circle mx-auto" [src]="testimonials[testimonialIndex].img" alt="Testimonial" style="width: 100px; height: 100px; object-fit: cover;">
+          </div>
+          <div class="testimonial-text">
+            <p class="lead mb-4">"{{ testimonials[testimonialIndex].text }}"</p>
+            <h5 class="mb-0">Cliente Satisfecho</h5>
+            <small class="text-muted">Viajero Experto</small>
+          </div>
+          <div class="testimonial-controls mt-4">
+            <button class="btn btn-outline-primary me-2" (click)="prevTestimonial()">
+              <i class="fa fa-chevron-left"></i>
+            </button>
+            <button class="btn btn-outline-primary" (click)="nextTestimonial()">
+              <i class="fa fa-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

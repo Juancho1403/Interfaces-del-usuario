@@ -1,0 +1,30 @@
+<div>
+  @if (showSplash()) {
+    <div style="
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: linear-gradient(135deg, #1a1a2e, #2a2a2a);
+      transition: opacity 1.2s;
+    ">
+      <iframe
+        src="/animacion_b3.html"
+        title="Animación Tangram 3D"
+        style="
+          width: 100vw;
+          height: 100vh;
+          border: none;
+          display: block;
+          background: transparent;
+        "
+        allowfullscreen>
+      </iframe>
+    </div>
+  } @else {
+    @if (!shouldHideHeader()) {
+      <app-topbar></app-topbar>
+      <app-navbar [isLoggedIn]="isLoggedIn()" (logout)="logout()"></app-navbar>
+    }
+    <router-outlet></router-outlet>
+  }
+  </div>

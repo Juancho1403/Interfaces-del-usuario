@@ -1,0 +1,135 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8">
+      <div class="card p-4">
+        <h2 class="mb-4 text-center">Registrarse</h2>
+        <form (ngSubmit)="handleRegister($event)">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="nombre">Nombre Completo</label>
+                <input 
+                  type="text" 
+                  id="nombre"
+                  [(ngModel)]="nombre" 
+                  name="nombre"
+                  class="form-control" 
+                  [class.is-invalid]="errors.nombre"
+                  required 
+                />
+                @if (errors.nombre) {
+                  <div class="invalid-feedback">{{ errors.nombre }}</div>
+                }
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="email">Email</label>
+                <input 
+                  type="email" 
+                  id="email"
+                  [(ngModel)]="email" 
+                  name="email"
+                  class="form-control" 
+                  [class.is-invalid]="errors.email"
+                  required 
+                />
+                @if (errors.email) {
+                  <div class="invalid-feedback">{{ errors.email }}</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="telefono">Teléfono</label>
+                <input 
+                  type="tel" 
+                  id="telefono"
+                  [(ngModel)]="telefono" 
+                  name="telefono"
+                  class="form-control" 
+                />
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="fechaNacimiento">Fecha de Nacimiento</label>
+                <input 
+                  type="date" 
+                  id="fechaNacimiento"
+                  [(ngModel)]="fechaNacimiento" 
+                  name="fechaNacimiento"
+                  class="form-control" 
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group mb-3">
+            <label for="direccion">Dirección</label>
+            <textarea 
+              id="direccion"
+              [(ngModel)]="direccion" 
+              name="direccion"
+              class="form-control" 
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="password">Contraseña</label>
+                <input 
+                  type="password" 
+                  id="password"
+                  [(ngModel)]="password" 
+                  name="password"
+                  class="form-control" 
+                  [class.is-invalid]="errors.password"
+                  required 
+                />
+                @if (errors.password) {
+                  <div class="invalid-feedback">{{ errors.password }}</div>
+                }
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label for="confirmPassword">Confirmar Contraseña</label>
+                <input 
+                  type="password" 
+                  id="confirmPassword"
+                  [(ngModel)]="confirmPassword" 
+                  name="confirmPassword"
+                  class="form-control" 
+                  [class.is-invalid]="errors.confirmPassword"
+                  required 
+                />
+                @if (errors.confirmPassword) {
+                  <div class="invalid-feedback">{{ errors.confirmPassword }}</div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <button 
+            type="submit" 
+            class="btn btn-primary w-100"
+            [disabled]="isLoading">
+            @if (isLoading) {
+              <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+              Registrando...
+            } @else {
+              Registrarse
+            }
+          </button>
+        </form>
+        <a routerLink="/login" class="btn btn-link w-100 mt-3">¿Ya tienes cuenta? Inicia sesión</a>
+      </div>
+    </div>
+  </div>
+</div>

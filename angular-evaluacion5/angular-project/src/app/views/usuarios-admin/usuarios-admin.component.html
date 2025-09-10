@@ -1,0 +1,114 @@
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h3 class="mb-0">Administrar Usuarios</h3>
+          <button class="btn btn-primary" (click)="showAddForm = !showAddForm">
+            {{ showAddForm ? 'Cancelar' : 'Agregar Usuario' }}
+          </button>
+        </div>
+        <div class="card-body">
+          @if (showAddForm) {
+            <div class="add-user-form mb-4 p-3 border rounded">
+              <h5>Agregar Nuevo Usuario</h5>
+              <form (ngSubmit)="addUser()">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label>Nombre</label>
+                      <input type="text" class="form-control" [(ngModel)]="newUser.nombre" name="nombre" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label>Email</label>
+                      <input type="email" class="form-control" [(ngModel)]="newUser.email" name="email" required>
+                    </div>
+                  </div>
+                </div>
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label>Contraseña</label>
+                      <input type="password" class="form-control" [(ngModel)]="newUser.password" name="password" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group mb-3">
+                      <label>Rol</label>
+                      <select class="form-control" [(ngModel)]="newUser.role" name="role">
+                        <option value="user">Usuario</option>
+                        <option value="admin">Administrador</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                <button type="submit" class="btn btn-success">Agregar Usuario</button>
+              </form>
+            </div>
+          }
+
+          @if (isLoading) {
+            <div class="text-center">
+              <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Cargando...</span>
+              </div>
+            </div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-striped">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Teléfono</th>
+                    <th>Rol</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (usuario of usuarios; track usuario.id) {
+                    <tr>
+                      @if (editingUser && editingUser.id === usuario.id) {
+                        <td>{{ usuario.id }}</td>
+                        <td><input type="text" class="form-control form-control-sm" [(ngModel)]="editingUser.nombre"></td>
+                        <td><input type="email" class="form-control form-control-sm" [(ngModel)]="editingUser.email"></td>
+                        <td><input type="tel" class="form-control form-control-sm" [(ngModel)]="editingUser.telefono"></td>
+                        <td>
+                          <select class="form-control form-control-sm" [(ngModel)]="editingUser.role">
+                            <option value="user">Usuario</option>
+                            <option value="admin">Administrador</option>
+                          </select>
+                        </td>
+                        <td>
+                          <button class="btn btn-success btn-sm me-2" (click)="updateUser()">Guardar</button>
+                          <button class="btn btn-secondary btn-sm" (click)="cancelEdit()">Cancelar</button>
+                        </td>
+                      } @else {
+                        <td>{{ usuario.id }}</td>
+                        <td>{{ usuario.nombre }}</td>
+                        <td>{{ usuario.email }}</td>
+                        <td>{{ usuario.telefono || 'N/A' }}</td>
+                        <td>
+                          <span class="badge" [class.bg-primary]="usuario.role === 'admin'" [class.bg-secondary]="usuario.role === 'user'">
+                            {{ usuario.role }}
+                          </span>
+                        </td>
+                        <td>
+                          <button class="btn btn-warning btn-sm me-2" (click)="editUser(usuario)">Editar</button>
+                          <button class="btn btn-danger btn-sm" (click)="deleteUser(usuario.id!)">Eliminar</button>
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

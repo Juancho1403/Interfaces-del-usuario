@@ -1,0 +1,71 @@
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Administrar Multimedia</h2>
+      
+      <!-- Carousel Images -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Imágenes del Carousel</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            @for (image of carouselImages; track image.id) {
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <img [src]="image.src" class="card-img-top" [alt]="image.name" style="height: 200px; object-fit: cover;">
+                  <div class="card-body">
+                    <h6 class="card-title">{{ image.name }}</h6>
+                    <p class="card-text">
+                      <small class="text-muted">
+                        {{ image.isDefault ? 'Imagen por defecto' : 'Imagen personalizada' }}
+                      </small>
+                    </p>
+                    @if (!image.isDefault) {
+                      <button class="btn btn-danger btn-sm" (click)="removeImage(image.id)">
+                        Eliminar
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Carousel Videos -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Videos del Carousel</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            @for (video of carouselVideos; track video.id) {
+              <div class="col-md-4 mb-3">
+                <div class="card">
+                  <video class="card-img-top" style="height: 200px; object-fit: cover;" controls>
+                    <source [src]="video.src" type="video/mp4">
+                    Tu navegador no soporta el elemento video.
+                  </video>
+                  <div class="card-body">
+                    <h6 class="card-title">{{ video.name }}</h6>
+                    <p class="card-text">
+                      <small class="text-muted">Video personalizado</small>
+                    </p>
+                    <button class="btn btn-danger btn-sm" (click)="removeVideo(video.id)">
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+          @if (carouselVideos.length === 0) {
+            <p class="text-muted text-center">No hay videos en el carousel</p>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,20 @@
+/* Login component specific styles */
+.card {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border: none;
+}
+
+.form-control:focus {
+  border-color: #7AB730;
+  box-shadow: 0 0 0 0.2rem rgba(122, 183, 48, 0.25);
+}
+
+.btn-primary {
+  background-color: #7AB730;
+  border-color: #7AB730;
+}
+
+.btn-primary:hover {
+  background-color: #5f8f25;
+  border-color: #5f8f25;
+}

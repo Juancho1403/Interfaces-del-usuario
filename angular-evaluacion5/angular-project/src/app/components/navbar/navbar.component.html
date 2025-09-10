@@ -1,0 +1,66 @@
+<div class="container-fluid position-relative nav-bar p-0">
+  <div class="container-lg position-relative p-0 px-lg-3" style="z-index: 9;">
+    <nav class="navbar navbar-expand-lg bg-white navbar-light shadow-lg py-3 py-lg-0 px-3">
+      <a class="navbar-brand d-flex align-items-center" routerLink="/">
+        <h1 class="m-0" style="font-weight: 700; letter-spacing: 1px;">
+          <span style="color: #222;">TRAVEL</span><span style="color: #7AB730;">ER</span>
+        </h1>
+      </a>
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#navbarCollapse"
+        aria-controls="navbarCollapse"
+        aria-expanded="false"
+        aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end px-3" id="navbarCollapse">
+        <div class="navbar-nav ml-auto py-0 d-flex align-items-center flex-lg-nowrap flex-wrap justify-content-lg-end" 
+             style="font-size: 1.15rem; font-weight: 500; gap: 24px;">
+          
+          <a class="nav-item nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">Home</a>
+          <a class="nav-item nav-link" routerLink="/about" routerLinkActive="active">About</a>
+          <a class="nav-item nav-link" routerLink="/service" routerLinkActive="active">Services</a>
+          <a class="nav-item nav-link" routerLink="/package" routerLinkActive="active">Tour Packages</a>
+          
+          <!-- Solo admin puede ver Usuarios y Configuraciones -->
+          @if (isLoggedIn && role === 'admin') {
+            <a class="nav-item nav-link" routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+            <a class="nav-item nav-link" routerLink="/configuraciones" routerLinkActive="active">Configuraciones</a>
+            <a class="nav-item nav-link" routerLink="/multimedia" routerLinkActive="active">Multimedia</a>
+          }
+          
+          <!-- Usuarios normales solo pueden ver Usuarios si están logueados -->
+          @if (isLoggedIn && role !== 'admin') {
+            <a class="nav-item nav-link" routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
+          }
+          
+          <div class="nav-item dropdown">
+            <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown">Pages</a>
+            <div class="dropdown-menu border-0 rounded-0 m-0">
+              <a class="dropdown-item" routerLink="/blog">Blog Grid</a>
+              <a class="dropdown-item" routerLink="/single">Blog Detail</a>
+              <a class="dropdown-item" routerLink="/destination">Destination</a>
+              <a class="dropdown-item" routerLink="/guide">Travel Guides</a>
+              <a class="dropdown-item" routerLink="/testimonial">Testimonial</a>
+            </div>
+          </div>
+          
+          <a class="nav-item nav-link" routerLink="/contact" routerLinkActive="active">Contact</a>
+          
+          <!-- Botones de sesión -->
+          @if (!isLoggedIn) {
+            <a class="btn btn-success ml-2" routerLink="/login" routerLinkActive="active" style="min-width: 130px;">Iniciar Sesión</a>
+            <a class="btn btn-outline-primary ml-2" routerLink="/register" routerLinkActive="active" style="min-width: 130px;">Registrarse</a>
+          }
+          
+          @if (isLoggedIn) {
+            <button class="btn btn-danger ml-2" style="min-width: 130px;" (click)="handleLogout()">Salir de sesión</button>
+          }
+        </div>
+      </div>
+    </nav>
+  </div>
+</div>

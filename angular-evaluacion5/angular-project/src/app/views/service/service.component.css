@@ -1,0 +1,11 @@
+/* Service component specific styles */
+.service-item {
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-item:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}

@@ -1,0 +1,109 @@
+<div class="container py-5">
+  <div class="row">
+    <div class="col-12">
+      <h2 class="mb-4">Configuraciones del Sitio</h2>
+      
+      <!-- Color Configuration -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Configuración de Colores</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Color Primario</label>
+                <input type="color" class="form-control" [(ngModel)]="colorConfig.color_primario" name="color_primario">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Color Secundario</label>
+                <input type="color" class="form-control" [(ngModel)]="colorConfig.color_secundario" name="color_secundario">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Color Terciario</label>
+                <input type="color" class="form-control" [(ngModel)]="colorConfig.color_terciario" name="color_terciario">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Color de Texto</label>
+                <input type="color" class="form-control" [(ngModel)]="colorConfig.color_texto" name="color_texto">
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Color de Fondo</label>
+                <input type="color" class="form-control" [(ngModel)]="colorConfig.color_fondo" name="color_fondo">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" (click)="saveColorConfiguration()">Guardar Colores</button>
+        </div>
+      </div>
+
+      <!-- Typography Configuration -->
+      <div class="card mb-4">
+        <div class="card-header">
+          <h4>Configuración de Tipografía</h4>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Fuente para Títulos</label>
+                <select class="form-control" [(ngModel)]="typographyConfig.fuente_titulo" name="fuente_titulo">
+                  <option value="Arial">Arial</option>
+                  <option value="Helvetica">Helvetica</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group mb-3">
+                <label>Fuente para Texto</label>
+                <select class="form-control" [(ngModel)]="typographyConfig.fuente_texto" name="fuente_texto">
+                  <option value="Arial">Arial</option>
+                  <option value="Helvetica">Helvetica</option>
+                  <option value="Times New Roman">Times New Roman</option>
+                  <option value="Georgia">Georgia</option>
+                  <option value="Verdana">Verdana</option>
+                </select>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label>Tamaño de Título (px)</label>
+                <input type="number" class="form-control" [(ngModel)]="typographyConfig.tam_titulo" name="tam_titulo">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label>Tamaño de Subtítulo (px)</label>
+                <input type="number" class="form-control" [(ngModel)]="typographyConfig.tam_subtitulo" name="tam_subtitulo">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group mb-3">
+                <label>Tamaño de Texto (px)</label>
+                <input type="number" class="form-control" [(ngModel)]="typographyConfig.tam_texto" name="tam_texto">
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" (click)="saveTypographyConfiguration()">Guardar Tipografía</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
